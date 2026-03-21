@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Luminous Voice | Dashboard</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#6366f1",
+                        "primary-container": "#4338ca",
+                        "on-primary": "#ffffff",
+                        "secondary": "#22c55e",
+                        "secondary-container": "rgba(34, 197, 94, 0.1)",
+                        "on-secondary-container": "#4ade80",
+                        "surface": "#000000",
+                        "on-surface": "#f8fafc",
+                        "on-surface-variant": "#94a3b8",
+                        "outline-variant": "rgba(255, 255, 255, 0.1)",
+                        "surface-container-lowest": "#0a0a0a",
+                        "surface-container-high": "#1a1a1a",
+                        "surface-container-highest": "#262626",
+                        "error": "#ef4444"
+                    },
+                    fontFamily: {
+                        "headline": ["Manrope", "sans-serif"],
+                        "body": ["Manrope", "sans-serif"],
+                        "label": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" },
+                },
+            },
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Manrope', sans-serif;
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        .glass-effect {
+            backdrop-filter: blur(20px);
+        }
+
+        .luminous-glow {
+            box-shadow: 0 0 30px -5px rgba(99, 102, 241, 0.5);
+        }
+
+        .neon-glow {
+            box-shadow: 0 0 20px -5px rgba(34, 197, 94, 0.4);
+        }
+    </style>
+</head>
+
+<body class="bg-surface text-on-surface selection:bg-primary-container selection:text-on-primary">
+    <!-- TopAppBar -->
+    <header class="fixed top-0 w-full z-50 bg-black/60 backdrop-blur-xl border-b border-white/5">
+        <div class="flex justify-between items-center px-6 py-4 max-w-7xl mx-auto">
+            <div class="text-xl font-bold tracking-tighter text-primary" style="color: #00FF41;">Luminous Voice</div>
+            <nav class="hidden md:flex items-center gap-8 font-manrope font-medium tracking-tight">
+                <a class="text-primary font-bold border-b-2 border-primary pb-1" href="#"
+                    style="color: #00FF41; border-color: #00FF41;">Dashboard</a>
+                <a class="text-slate-400 hover:text-primary transition-colors" href="#" style="">Analytics</a>
+            </nav>
+            <div class="flex items-center gap-4">
+                <button
+                    class="p-2 text-primary hover:bg-white/5 rounded-lg transition-all active:scale-95 duration-200 ease-in-out"
+                    style="color: #00FF41;">
+                    <span class="material-symbols-outlined" data-icon="mic" style="">mic</span>
+                </button>
+                <div class="h-10 w-10 rounded-full overflow-hidden border-2 border-secondary">
+                    <img alt="User Profile" class="object-cover w-full h-full"
+                        data-alt="Modern professional headshot of a person"
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuBo3Zgx-qChfWkGJ0x6hcc5_J6gvXiaujs8DpU0RMBSHmNFW8gKtVI8fwQ5rIO2zwqjHyXb2SzQs3L53gFNLL_uGxFobIZt8rXr7YH0uJUs6Z-FOdHWQ2-pq8DodSbbnly35IuRU4MCjTU3WZ68LhwCavtm8LtfoI1942eRh9H1K2zrf5G3asKBfqO8dQYvNjtpOUm-Kyd_Le0k70De_ZqAf5sQ4-EXgUWvDZ4Oe6ob7zV4lO6iPqP-LmTUewrXipmfkIihc6uavOGM"
+                        style="" />
+                </div>
+            </div>
+        </div>
+    </header>
+    <main class="pt-32 pb-20 px-6 max-w-7xl mx-auto">
+        <!-- Hero Section -->
+        <section class="mb-16">
+            <h1 class="text-5xl font-extrabold tracking-tight text-on-surface mb-2" style="">Good morning, Curator.</h1>
+        </section>
+        <!-- Voice Input Area -->
+        <section class="mb-20 relative group">
+            <div
+                class="bg-surface-container-lowest rounded-full p-2 flex items-center shadow-2xl border border-white/10 focus-within:ring-2 ring-primary/40 transition-all duration-300">
+                <input
+                    class="flex-1 bg-transparent border-none focus:ring-0 px-8 text-xl font-medium text-on-surface placeholder:text-on-surface-variant/40"
+                    placeholder="Transcribe a thought or type a task..." type="text" />
+                <button
+                    class="bg-gradient-to-br from-primary to-primary-container p-5 rounded-full text-white shadow-lg luminous-glow transition-all active:scale-90 group-hover:scale-105"
+                    style="">
+                    <span class="material-symbols-outlined" data-icon="mic"
+                        style='font-variation-settings: "FILL" 1;'>mic</span>
+                </button>
+            </div>
+            <!-- Decorative Background Accent -->
+            <div
+                class="absolute -z-10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[110%] h-[200%] bg-primary/10 blur-[120px] rounded-full">
+            </div>
+        </section>
+        <!-- Filters -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
+            <div class="flex flex-wrap gap-3">
+                <button
+                    class="px-6 py-2.5 rounded-full bg-primary text-on-primary font-bold text-sm tracking-wide transition-all shadow-md shadow-primary/40"
+                    style="background-color: #00FF41; color: #000000; box-shadow: 0 4px 14px 0 rgba(0, 255, 65, 0.39);">All</button>
+                <button
+                    class="px-6 py-2.5 rounded-full bg-surface-container-high text-on-surface-variant font-medium text-sm hover:bg-surface-container-highest transition-all"
+                    style="">Pending</button>
+                <button
+                    class="px-6 py-2.5 rounded-full bg-secondary/20 text-secondary font-bold text-sm hover:bg-secondary/30 transition-all"
+                    style="">Completed</button>
+                <button
+                    class="px-6 py-2.5 rounded-full bg-surface-container-high text-on-surface-variant font-medium text-sm hover:bg-surface-container-highest transition-all"
+                    style="">Delayed</button>
+            </div>
+        </div>
+        <!-- Bento Grid Task List -->
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-8">
+            <!-- Urgent Task Card -->
+            <div
+                class="md:col-span-12 bg-surface-container-lowest p-8 rounded-xl border border-white/5 shadow-2xl hover:border-primary/30 transition-all group flex flex-col justify-between min-h-[200px]">
+                <div>
+                    <div class="flex justify-between items-start mb-4">
+                        <div></div>
+                        <span class="material-symbols-outlined text-on-surface-variant/40" data-icon="more_horiz"
+                            style="">more_horiz</span>
+                    </div>
+                    <h3 class="text-3xl font-bold text-on-surface leading-tight mb-4" style="">take the jimmy out for
+                        the walk in evening at 5pm</h3>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="flex -space-x-2">
+                        <img alt="Team"
+                            class="w-8 h-8 rounded-full border-2 border-surface-container-lowest object-cover"
+                            data-alt="User avatar"
+                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuATMp0VhcuAhL4SX52CyZsH6_ivuSCo5isQqOET71UYUwN55eAWQcUC4lcu4RYS1cSWIm2G_C3CFpViITgEwyj82KqHNUrNuYYDvrAKMGw_Xt4LrGqp324q-MRdnBYP2O9oxffPX6VUY2FScf6pudYR7Xmb7CqhSgpcLQOyLOXN6vKMB7ZPrggOs-9fWEYO1uvjGsdHt9eXrAWJ2pSJkawYzODOj5WEQCYIpmyNVWXNwQQ2DPenWN99cx2xREYXWeTAV34TrMWYxB2f"
+                            style="" />
+                        <img alt="Team"
+                            class="w-8 h-8 rounded-full border-2 border-surface-container-lowest object-cover"
+                            data-alt="User avatar"
+                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuBxAwYNCUVUYmDvD92rZVKSVKF-DiHE15QCVDPC-LIc9c0oqrz6y2Vr7aXrTBDF6-1tCUm6Toh9a12TqzgcKYoeh_26_8bWeaZ-rthS9PMty8Ppy06cIwxw9dkEExhiXWi7DV7A7iVQwd6CRoE-jAzdW7WS5Z_uQw1IiS_XzrqwNvDcCJzX89uu1wLX2aV5_zj3xYpfbmK-RyQEnnWqO07uFZokYxZyPczOYIh2RJOcjISLclaICqrDC4xLIQ13pvjd9HiJV_DwsfIN"
+                            style="" />
+                    </div>
+                    <span class="text-on-surface-variant text-sm font-medium" style=""><br /></span>
+                </div>
+            </div>
+            <!-- Standard Cards -->
+            <div class="md:col-span-6 bg-surface-container-lowest p-6 rounded-xl border border-white/5 shadow-lg">
+                <h4 class="text-lg font-bold text-on-surface mb-2" style="">Task 2</h4>
+                <p class="text-on-surface-variant text-sm mb-6" style=""><br /></p>
+            </div>
+            <div class="md:col-span-6 bg-surface-container-lowest p-6 rounded-xl border border-white/5 shadow-lg">
+                <h4 class="text-lg font-bold text-on-surface mb-2" style="">task 3</h4>
+                <p class="text-on-surface-variant text-sm mb-6" style=""><br /></p>
+                <div class="flex items-center gap-2 text-on-surface-variant text-xs font-bold uppercase tracking-wider"
+                    style=""><br /></div>
+            </div>
+        </div>
+    </main>
+</body>
+
+</html>
