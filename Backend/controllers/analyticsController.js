@@ -1,0 +1,135 @@
+const Task = require('../models/Task');
+
+// @desc    Get overall analytics summary
+// @route   GET /api/analytics/summary
+const getSummary = async (req, res, next) => {
+  try {
+    const userId = req.user._id;
+    const now = new Date();
+
+    const [total, completed, pending, cancelled, delayed] = await Promise.all([
+      Task.countDocuments({ user: userId }),
+      Task.countDocuments({ user: userId, status: 'completed' }),
+      Task.countDocuments({ user: userId, status: 'pending' }),
+      Task.countDocuments({ user: userId, status: 'cancelled' }),
+      Task.countDocuments({ user: userId, status: 'delayed' }),
+    ]);
+
+    // Completed on time: completedAt <= dueDate
+    const completedOnTime = await Task.countDocuments({
+      user: userId,
+      status: 'completed',
+      dueDate: { $ne: null },
+      $expr: { $lte: ['$completedAt', '$dueDate'] },
+    });
+
+    // Completed late: completedAt > dueDate
+    const completedLate = await Task.countDocuments({
+      user: userId,
+      status: 'completed',
+      dueDate: { $ne: null },
+      $expr: { $gt: ['$completedAt', '$dueDate'] },
+    });
+
+    // Currently overdue: pending/delayed + dueDate < now
+    const overdue = await Task.countDocuments({
+      user: userId,
+      status: { $in: ['pending', 'delayed'] },
+      dueDate: { $lt: now, $ne: null },
+    });
+
+    res.json({
+      total,
+      completed,
+      pending,
+      cancelled,
+      delayed,
+      completedOnTime,
+      completedLate,
+      overdue,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get daily completion trend (last N days)
+// @route   GET /api/analytics/completion-trend
+const getCompletionTrend = async (req, res, next) => {
+  try {
+    const userId = req.user._id;
+    const days = parseInt(req.query.days) || 30;
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+    startDate.setHours(0, 0, 0, 0);
+
+    const trend = await Task.aggregate([
+      {
+        $match: {
+          user: userId,
+          status: 'completed',
+          completedAt: { $gte: startDate },
+        },
+      },
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: '%Y-%m-%d', date: '$completedAt' },
+          },
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { _id: 1 } },
+      {
+        $project: {
+          _id: 0,
+          date: '$_id',
+          count: 1,
+        },
+      },
+    ]);
+
+    res.json({ data: trend });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get status breakdown for pie chart
+// @route   GET /api/analytics/status-breakdown
+const getStatusBreakdown = async (req, res, next) => {
+  try {
+    const userId = req.user._id;
+
+    const breakdown = await Task.aggregate([
+      { $match: { user: userId } },
+      { $group: { _id: '$status', count: { $sum: 1 } } },
+      { $project: { _id: 0, status: '$_id', count: 1 } },
+    ]);
+
+    res.json({ data: breakdown });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get currently overdue tasks
+// @route   GET /api/analytics/overdue
+const getOverdueTasks = async (req, res, next) => {
+  try {
+    const userId = req.user._id;
+    const now = new Date();
+
+    const tasks = await Task.find({
+      user: userId,
+      status: { $in: ['pending', 'delayed'] },
+      dueDate: { $lt: now, $ne: null },
+    }).sort({ dueDate: 1 });
+
+    res.json({ tasks });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = { getSummary, getCompletionTrend, getStatusBreakdown, getOverdueTasks };

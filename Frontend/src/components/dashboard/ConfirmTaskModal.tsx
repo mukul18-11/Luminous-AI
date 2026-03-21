@@ -1,27 +1,58 @@
 import React from "react";
 import MaterialIcon from "../ui/MaterialIcon";
 
+interface ParsedTaskData {
+  title: string;
+  description: string;
+  dueDate: string | null;
+  dueTime: string | null;
+  priority: string;
+}
+
 interface ConfirmTaskModalProps {
   isOpen: boolean;
-  parsedTask: {
-    title: string;
-    description: string;
-    dueDate: string | null;
-    priority: string;
-  } | null;
-  onConfirm: (task: { title: string; description: string; dueDate: string | null; priority: string }) => void;
+  parsedTask: ParsedTaskData | null;
+  clarificationQuestion: string | null;
+  onConfirm: (task: ParsedTaskData) => void;
   onCancel: () => void;
   onChange: (field: string, value: string) => void;
+  onClarify?: (answer: string) => void;
 }
 
 const ConfirmTaskModal: React.FC<ConfirmTaskModalProps> = ({
   isOpen,
   parsedTask,
+  clarificationQuestion,
   onConfirm,
   onCancel,
   onChange,
+  onClarify,
 }) => {
+  const [clarifyAnswer, setClarifyAnswer] = React.useState("");
+
   if (!isOpen || !parsedTask) return null;
+
+  const handleClarify = () => {
+    if (clarifyAnswer.trim() && onClarify) {
+      onClarify(clarifyAnswer.trim());
+      setClarifyAnswer("");
+    }
+  };
+
+  const handleClarifyKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && clarifyAnswer.trim()) {
+      handleClarify();
+    }
+  };
+
+  // Format time for display (HH:MM → 12-hour)
+  const formatTimeDisplay = (time: string | null) => {
+    if (!time) return "";
+    const [h, m] = time.split(":").map(Number);
+    const ampm = h >= 12 ? "PM" : "AM";
+    const hour12 = h % 12 || 12;
+    return `${hour12}:${m.toString().padStart(2, "0")} ${ampm}`;
+  };
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
@@ -43,6 +74,34 @@ const ConfirmTaskModal: React.FC<ConfirmTaskModalProps> = ({
             <p className="text-xs text-on-surface-variant">Review the AI-extracted details</p>
           </div>
         </div>
+
+        {/* Clarification Question Banner */}
+        {clarificationQuestion && (
+          <div className="mb-6 p-4 bg-primary/10 rounded-lg border border-primary/20">
+            <div className="flex items-start gap-2 mb-3">
+              <MaterialIcon icon="smart_toy" className="text-primary mt-0.5" size="sm" />
+              <p className="text-sm text-primary font-medium">{clarificationQuestion}</p>
+            </div>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={clarifyAnswer}
+                onChange={(e) => setClarifyAnswer(e.target.value)}
+                onKeyDown={handleClarifyKeyDown}
+                placeholder="Type your answer..."
+                className="flex-1 bg-surface-container-high border border-white/10 rounded-lg py-2 px-3 text-white text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
+                autoFocus
+              />
+              <button
+                onClick={handleClarify}
+                disabled={!clarifyAnswer.trim()}
+                className="px-4 py-2 rounded-lg bg-primary text-black text-sm font-bold disabled:opacity-40 hover:shadow-primary/30 hover:shadow-lg transition-all"
+              >
+                Send
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Fields */}
         <div className="space-y-4">
@@ -72,17 +131,35 @@ const ConfirmTaskModal: React.FC<ConfirmTaskModalProps> = ({
             />
           </div>
 
-          {/* Due Date */}
-          <div>
-            <label className="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1 block">
-              Due Date
-            </label>
-            <input
-              type="date"
-              value={parsedTask.dueDate || ""}
-              onChange={(e) => onChange("dueDate", e.target.value)}
-              className="w-full bg-surface-container-high border border-white/10 rounded-lg py-2.5 px-4 text-white text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
-            />
+          {/* Date & Time Row */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1 block">
+                Due Date
+              </label>
+              <input
+                type="date"
+                value={parsedTask.dueDate || ""}
+                onChange={(e) => onChange("dueDate", e.target.value)}
+                className="w-full bg-surface-container-high border border-white/10 rounded-lg py-2.5 px-4 text-white text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1 block">
+                Due Time
+              </label>
+              <input
+                type="time"
+                value={parsedTask.dueTime || ""}
+                onChange={(e) => onChange("dueTime", e.target.value)}
+                className="w-full bg-surface-container-high border border-white/10 rounded-lg py-2.5 px-4 text-white text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
+              />
+              {parsedTask.dueTime && (
+                <p className="text-[10px] text-primary mt-1 font-medium">
+                  {formatTimeDisplay(parsedTask.dueTime)}
+                </p>
+              )}
+            </div>
           </div>
 
           {/* Priority */}

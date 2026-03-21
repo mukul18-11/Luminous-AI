@@ -6,6 +6,7 @@ export interface Task {
   title: string;
   description: string;
   dueDate: string | null;
+  dueTime: string | null; // "HH:MM" 24-hour format
   priority: TaskPriority;
   status: TaskStatus;
   completedAt: string | null;

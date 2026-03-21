@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Luminescent AI - Analytics</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "inverse-on-surface": "#283044",
+                        "on-background": "#dae2fd",
+                        "surface-container-high": "#222a3d",
+                        "secondary-fixed": "#c9e6ff",
+                        "background": "#0b1326",
+                        "tertiary-fixed": "#ffdbcc",
+                        "primary-container": "#4b4dd8",
+                        "on-secondary": "#00344d",
+                        "surface-bright": "#31394d",
+                        "outline": "#918fa1",
+                        "on-error": "#690005",
+                        "on-primary": "#1000a9",
+                        "surface": "#0b1326",
+                        "primary-fixed-dim": "#c0c1ff",
+                        "on-error-container": "#ffdad6",
+                        "on-surface": "#dae2fd",
+                        "on-surface-variant": "#c7c4d8",
+                        "on-primary-container": "#d9d8ff",
+                        "on-primary-fixed": "#07006c",
+                        "inverse-surface": "#dae2fd",
+                        "secondary-fixed-dim": "#89ceff",
+                        "surface-container-lowest": "#060e20",
+                        "secondary-container": "#00a2e6",
+                        "surface-dim": "#0b1326",
+                        "on-primary-fixed-variant": "#2f2ebe",
+                        "on-secondary-container": "#00344e",
+                        "outline-variant": "#464555",
+                        "surface-container-highest": "#2d3449",
+                        "on-secondary-fixed": "#001e2f",
+                        "primary": "#c0c1ff",
+                        "on-tertiary-fixed": "#351000",
+                        "on-tertiary": "#571f00",
+                        "surface-tint": "#c0c1ff",
+                        "surface-container-low": "#131b2e",
+                        "tertiary-container": "#a44100",
+                        "error": "#ffb4ab",
+                        "tertiary-fixed-dim": "#ffb695",
+                        "surface-container": "#171f33",
+                        "error-container": "#93000a",
+                        "on-secondary-fixed-variant": "#004c6e",
+                        "surface-variant": "#2d3449",
+                        "primary-fixed": "#e1e0ff",
+                        "on-tertiary-container": "#ffd2be",
+                        "inverse-primary": "#494bd6",
+                        "on-tertiary-fixed-variant": "#7b2f00",
+                        "tertiary": "#ffb695",
+                        "secondary": "#89ceff"
+                    },
+                    fontFamily: {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        body {
+            background-color: #0b1326;
+            color: #dae2fd;
+            font-family: 'Inter', sans-serif;
+        }
+        .glass-card {
+            background: rgba(34, 42, 61, 0.4);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(199, 196, 216, 0.05);
+        }
+        .ai-glow {
+            box-shadow: 0 0 20px rgba(192, 193, 255, 0.05);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 bg-[#0b1326]/80 backdrop-blur-xl shadow-2xl shadow-indigo-900/10">
+<div class="flex justify-between items-center h-16 px-8 max-w-full font-manrope text-sm tracking-tight">
+<div class="flex items-center gap-8">
+<span class="text-xl font-bold tracking-tighter text-[#c0c1ff]">Luminescent AI</span>
+<div class="hidden md:flex gap-6">
+<a class="text-[#c7c4d8] hover:text-[#dae2fd] transition-colors active:scale-95 duration-200" href="#">Dashboard</a>
+<a class="text-[#c0c1ff] font-bold border-b-2 border-[#4F46E5] pb-1 active:scale-95 duration-200" href="#">Analytics</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-[#c7c4d8] hover:bg-[#31394d]/50 rounded-lg transition-all active:scale-95 duration-200">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 text-[#c7c4d8] hover:bg-[#31394d]/50 rounded-lg transition-all active:scale-95 duration-200">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+<img alt="User profile avatar" class="w-8 h-8 rounded-full border border-outline-variant/20" data-alt="Close up portrait of a professional male user" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBK-qIEPX50JdiYSHfxzi-kfi2mCGC3ffCa2HQJvdAXQrhzXZC6t_LhnmajjvKEvC7Xgv9MczvHxAfQzUWlFpAfLc75ZsU6RzhDhEQePR31hYlMXpRmyNji6PB2unzXV1-Zp8E8Ha0TgImMdnxMb0SKta0CnyPQDOHidmkpOXyG_vNspTpovuly0k-sCu0Td4kTOZvW0tVvctWdkw4Ny4V0qJLOvwZp8F7vWva6HQqq7ta9qs5RJ9xfJVBzcpNPKYNP61ruplQu6JJ0"/>
+</div>
+</div>
+</nav>
+<main class="flex-grow pt-24 pb-12 px-8 max-w-7xl mx-auto w-full">
+<!-- Header Section -->
+<header class="mb-10">
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div>
+<span class="font-label text-[0.6875rem] uppercase tracking-widest text-secondary mb-2 block">Performance Overview</span>
+<h1 class="font-headline text-4xl font-extrabold tracking-tighter text-on-surface">Executive Insights</h1>
+</div>
+<div class="flex gap-3">
+<button class="flex items-center gap-2 px-4 py-2 rounded-lg bg-surface-container-high text-on-surface-variant hover:bg-surface-bright transition-colors text-sm font-medium">
+<span class="material-symbols-outlined text-sm" data-icon="calendar_today">calendar_today</span>
+                        Last 30 Days
+                    </button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary-container text-on-primary-container hover:opacity-90 transition-opacity text-sm font-semibold shadow-lg shadow-primary-container/20">
+<span class="material-symbols-outlined text-sm" data-icon="download">download</span>
+                        Export Report
+                    </button>
+</div>
+</div>
+</header>
+<!-- KPI Grid -->
+<section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+<!-- Total Tasks -->
+<div class="surface-container-low p-6 rounded-xl flex flex-col justify-between ai-glow">
+<div class="flex justify-between items-start">
+<span class="text-on-surface-variant text-xs font-semibold uppercase tracking-wider">Total Tasks</span>
+<span class="material-symbols-outlined text-primary" data-icon="list_alt">list_alt</span>
+</div>
+<div class="mt-4">
+<h2 class="font-headline text-3xl font-bold">24</h2>
+<p class="text-secondary text-xs mt-1">+12% from last month</p>
+</div>
+</div>
+<!-- Completed -->
+<div class="surface-container-low p-6 rounded-xl flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<span class="text-on-surface-variant text-xs font-semibold uppercase tracking-wider">Completed</span>
+<span class="material-symbols-outlined text-green-400" data-icon="check_circle">check_circle</span>
+</div>
+<div class="mt-4">
+<div class="flex items-baseline gap-2">
+<h2 class="font-headline text-3xl font-bold">18</h2>
+<span class="text-on-surface-variant text-lg">/ 75%</span>
+</div>
+<div class="w-full bg-surface-container-highest h-1.5 rounded-full mt-2 overflow-hidden">
+<div class="bg-primary-container h-full w-3/4"></div>
+</div>
+</div>
+</div>
+<!-- Pending -->
+<div class="surface-container-low p-6 rounded-xl flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<span class="text-on-surface-variant text-xs font-semibold uppercase tracking-wider">Pending</span>
+<span class="material-symbols-outlined text-secondary" data-icon="pending_actions">pending_actions</span>
+</div>
+<div class="mt-4">
+<h2 class="font-headline text-3xl font-bold">4</h2>
+<p class="text-on-surface-variant text-xs mt-1">Due within 48 hours</p>
+</div>
+</div>
+<!-- Overdue -->
+<div class="surface-container-low p-6 rounded-xl flex flex-col justify-between relative overflow-hidden">
+<div class="absolute top-0 left-0 w-1 h-full bg-error"></div>
+<div class="flex justify-between items-start">
+<span class="text-on-surface-variant text-xs font-semibold uppercase tracking-wider">Overdue</span>
+<span class="material-symbols-outlined text-error" data-icon="error">error</span>
+</div>
+<div class="mt-4">
+<h2 class="font-headline text-3xl font-bold text-error">2</h2>
+<p class="text-error/80 text-xs mt-1">Requires immediate action</p>
+</div>
+</div>
+</section>
+<!-- Bento Grid Layout for Charts & Insights -->
+<section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+<!-- Area Chart: Completion Trend -->
+<div class="lg:col-span-8 surface-container-low p-8 rounded-xl min-h-[400px]">
+<div class="flex justify-between items-center mb-8">
+<h3 class="font-headline text-xl font-bold">Completion Trend</h3>
+<div class="flex gap-4">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<span class="text-[10px] text-on-surface-variant uppercase tracking-widest font-bold">Productivity</span>
+</div>
+</div>
+</div>
+<div class="relative h-64 w-full flex items-end gap-2 group">
+<!-- Mock Area Chart using CSS Gradients/Shapes -->
+<div class="absolute inset-0 bg-gradient-to-t from-primary/5 to-transparent rounded-lg"></div>
+<div class="flex-1 h-2/3 bg-primary/20 rounded-t-sm hover:bg-primary/40 transition-all cursor-help relative group/bar" title="Mon: 12">
+<div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-surface-bright px-2 py-1 rounded text-[10px] opacity-0 group-hover/bar:opacity-100 transition-opacity">12</div>
+</div>
+<div class="flex-1 h-1/2 bg-primary/20 rounded-t-sm hover:bg-primary/40 transition-all cursor-help relative group/bar" title="Tue: 8"></div>
+<div class="flex-1 h-3/4 bg-primary/20 rounded-t-sm hover:bg-primary/40 transition-all cursor-help relative group/bar" title="Wed: 15"></div>
+<div class="flex-1 h-2/5 bg-primary/20 rounded-t-sm hover:bg-primary/40 transition-all cursor-help relative group/bar" title="Thu: 6"></div>
+<div class="flex-1 h-4/5 bg-primary/20 rounded-t-sm hover:bg-primary/40 transition-all cursor-help relative group/bar" title="Fri: 19"></div>
+<div class="flex-1 h-1/3 bg-primary/20 rounded-t-sm hover:bg-primary/40 transition-all cursor-help relative group/bar" title="Sat: 5"></div>
+<div class="flex-1 h-1/4 bg-primary/20 rounded-t-sm hover:bg-primary/40 transition-all cursor-help relative group/bar" title="Sun: 3"></div>
+<div class="flex-1 h-5/6 bg-primary/20 rounded-t-sm hover:bg-primary/40 transition-all cursor-help relative group/bar" title="Mon: 22"></div>
+</div>
+<div class="flex justify-between mt-4 text-[10px] text-on-surface-variant font-medium uppercase tracking-widest">
+<span>Oct 01</span>
+<span>Oct 08</span>
+<span>Oct 15</span>
+<span>Oct 22</span>
+<span>Oct 30</span>
+</div>
+</div>
+<!-- AI Insights Card -->
+<div class="lg:col-span-4 flex flex-col gap-6">
+<div class="bg-gradient-to-br from-primary/10 to-transparent p-1 rounded-xl glass-card border-primary/20">
+<div class="p-6">
+<div class="flex items-center gap-3 mb-4">
+<span class="material-symbols-outlined text-secondary" data-icon="psychology">psychology</span>
+<h3 class="font-headline text-lg font-bold">AI Predictive Insights</h3>
+</div>
+<p class="text-on-surface-variant text-sm leading-relaxed">
+                            You are most productive between <span class="text-primary font-bold">9 AM and 11 AM</span>. Your task completion rate has increased by <span class="text-secondary font-bold">12%</span> this week.
+                        </p>
+<div class="mt-6 pt-6 border-t border-outline-variant/10">
+<span class="text-[10px] text-tertiary uppercase tracking-widest font-bold block mb-2">Suggestion</span>
+<p class="text-xs text-on-surface/80 italic">"Schedule your deep-work tasks for tomorrow morning to capitalize on your peak energy window."</p>
+</div>
+</div>
+</div>
+<!-- Status Breakdown -->
+<div class="surface-container-low p-6 rounded-xl flex-grow">
+<h3 class="font-headline text-sm font-bold mb-6">Status Breakdown</h3>
+<div class="flex items-center gap-6">
+<div class="relative w-24 h-24 rounded-full border-8 border-primary-container flex items-center justify-center">
+<div class="absolute inset-0 border-8 border-secondary border-l-transparent border-b-transparent rotate-45 rounded-full"></div>
+<span class="text-xs font-bold">75%</span>
+</div>
+<div class="flex flex-col gap-2">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary-container"></span>
+<span class="text-[10px] text-on-surface-variant uppercase tracking-wider">Completed</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span class="text-[10px] text-on-surface-variant uppercase tracking-wider">Pending</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-error"></span>
+<span class="text-[10px] text-on-surface-variant uppercase tracking-wider">Delayed</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Reliability Bar Chart -->
+<div class="lg:col-span-12 surface-container-low p-8 rounded-xl">
+<div class="flex justify-between items-center mb-8">
+<div>
+<h3 class="font-headline text-xl font-bold">Reliability Metric</h3>
+<p class="text-on-surface-variant text-xs">Comparison of On-Time vs Late completions over the last 6 months.</p>
+</div>
+</div>
+<div class="flex flex-col gap-6">
+<!-- Sept -->
+<div class="space-y-2">
+<div class="flex justify-between text-[10px] uppercase font-bold tracking-widest text-on-surface-variant">
+<span>September</span>
+<span>92% On-Time</span>
+</div>
+<div class="w-full h-4 bg-surface-container-highest rounded-full flex overflow-hidden">
+<div class="h-full bg-primary" style="width: 92%"></div>
+<div class="h-full bg-error/40" style="width: 8%"></div>
+</div>
+</div>
+<!-- Aug -->
+<div class="space-y-2">
+<div class="flex justify-between text-[10px] uppercase font-bold tracking-widest text-on-surface-variant">
+<span>August</span>
+<span>84% On-Time</span>
+</div>
+<div class="w-full h-4 bg-surface-container-highest rounded-full flex overflow-hidden">
+<div class="h-full bg-primary" style="width: 84%"></div>
+<div class="h-full bg-error/40" style="width: 16%"></div>
+</div>
+</div>
+<!-- July -->
+<div class="space-y-2">
+<div class="flex justify-between text-[10px] uppercase font-bold tracking-widest text-on-surface-variant">
+<span>July</span>
+<span>78% On-Time</span>
+</div>
+<div class="w-full h-4 bg-surface-container-highest rounded-full flex overflow-hidden">
+<div class="h-full bg-primary" style="width: 78%"></div>
+<div class="h-full bg-error/40" style="width: 22%"></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="w-full py-8 mt-auto bg-[#0b1326] border-t border-[#c7c4d8]/15">
+<div class="flex flex-col md:flex-row justify-between items-center px-12 gap-4 font-manrope text-[11px] uppercase tracking-widest">
+<div class="text-[#c7c4d8]">Luminescent Executive AI</div>
+<div class="flex gap-8">
+<a class="text-[#c7c4d8]/60 hover:text-[#4F46E5] transition-colors" href="#">Privacy</a>
+<a class="text-[#c7c4d8]/60 hover:text-[#4F46E5] transition-colors" href="#">Terms</a>
+<a class="text-[#c7c4d8]/60 hover:text-[#4F46E5] transition-colors" href="#">Support</a>
+</div>
+<div class="text-[#c7c4d8]/60">© 2024 Luminescent Executive AI. All rights reserved.</div>
+</div>
+</footer>
+</body></html>

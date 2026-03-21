@@ -44,6 +44,14 @@ const TaskCard: React.FC<TaskCardProps> = ({
     });
   };
 
+  const formatTime = (timeStr: string | null) => {
+    if (!timeStr) return "";
+    const [h, m] = timeStr.split(":").map(Number);
+    const ampm = h >= 12 ? "PM" : "AM";
+    const hour12 = h % 12 || 12;
+    return `${hour12}:${m.toString().padStart(2, "0")} ${ampm}`;
+  };
+
   return (
     <div
       className={`
@@ -95,10 +103,16 @@ const TaskCard: React.FC<TaskCardProps> = ({
 
       {/* Bottom Section */}
       <div className="mt-4">
-        {/* Due Date */}
+        {/* Due Date & Time */}
         <div className="flex items-center gap-2 text-on-surface-variant text-xs font-bold uppercase tracking-wider mb-4">
           <MaterialIcon icon="calendar_today" size="sm" />
           <span>{formatDate(task.dueDate)}</span>
+          {task.dueTime && (
+            <>
+              <MaterialIcon icon="schedule" size="sm" />
+              <span>{formatTime(task.dueTime)}</span>
+            </>
+          )}
         </div>
 
         {/* Action Buttons */}
