@@ -7,11 +7,14 @@ const SignupPage: React.FC = () => {
 
   const handleSignup = (name: string, email: string, password: string) => {
     // TODO: integrate with backend API
+    // POST /api/auth/signup → then navigate to verify-otp
     console.log("Signup:", { name, email, password });
-    // Store user name for navbar display
-    localStorage.setItem("userName", name);
-    // After successful signup, redirect to dashboard
-    navigate("/dashboard");
+
+    // Store name for later use after verification
+    localStorage.setItem("pendingUserName", name);
+
+    // Navigate to OTP verification page, passing email via route state
+    navigate("/verify-otp", { state: { email } });
   };
 
   return (
