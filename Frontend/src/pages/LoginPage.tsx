@@ -36,6 +36,7 @@ const LoginPage: React.FC = () => {
   const [isLoading, setIsLoading] = React.useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = React.useState(false);
   const googleButtonHostRef = React.useRef<HTMLDivElement | null>(null);
+  const [googleButtonWidth, setGoogleButtonWidth] = React.useState(380);
 
   const handleGoogleCredential = React.useCallback(
     async (credential: string) => {
@@ -62,6 +63,25 @@ const LoginPage: React.FC = () => {
   );
 
   React.useEffect(() => {
+    const host = googleButtonHostRef.current;
+    if (!host) {
+      return;
+    }
+
+    const updateWidth = () => {
+      const nextWidth = Math.max(Math.round(host.getBoundingClientRect().width), 220);
+      setGoogleButtonWidth((currentWidth) => (currentWidth === nextWidth ? currentWidth : nextWidth));
+    };
+
+    updateWidth();
+
+    const resizeObserver = new ResizeObserver(updateWidth);
+    resizeObserver.observe(host);
+
+    return () => resizeObserver.disconnect();
+  }, []);
+
+  React.useEffect(() => {
     const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
     if (!clientId || !window.google?.accounts?.id) {
       return;
@@ -84,10 +104,10 @@ const LoginPage: React.FC = () => {
         size: "large",
         text: "signin_with",
         shape: "rectangular",
-        width: 380,
+        width: googleButtonWidth,
       });
     }
-  }, [handleGoogleCredential]);
+  }, [googleButtonWidth, handleGoogleCredential]);
 
   const handleLogin = async (email: string, password: string) => {
     setIsLoading(true);
