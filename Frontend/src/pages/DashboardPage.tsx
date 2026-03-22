@@ -15,6 +15,7 @@ import {
   getTasks,
   parseVoiceTask,
 } from "../api/tasks";
+import { logout } from "../api/auth";
 import type { ParsedVoiceTask, Task } from "../types";
 
 const FILTER_TABS = [
@@ -480,9 +481,10 @@ const DashboardPage: React.FC = () => {
       <Navbar
         userName={userName}
         onLogout={() => {
-          localStorage.removeItem("authToken");
-          localStorage.removeItem("userName");
-          navigate("/login");
+          void logout().finally(() => {
+            localStorage.removeItem("userName");
+            navigate("/login");
+          });
         }}
       />
 

@@ -2,7 +2,6 @@ import api from "./axios";
 import type { User } from "../types";
 
 interface AuthResponse {
-  token: string;
   user: User;
 }
 

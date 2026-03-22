@@ -3,17 +3,37 @@ const { OAuth2Client } = require('google-auth-library');
 const User = require('../models/User');
 const { generateOTP, sendOTPEmail } = require('../services/emailService');
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+const AUTH_COOKIE_NAME = 'auth_token';
+const AUTH_TTL_MS = 5 * 24 * 60 * 60 * 1000;
 
 // Generate JWT token
 const generateToken = (user) => {
   return jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, {
-    expiresIn: '7d',
+    expiresIn: '5d',
   });
 };
 
-const buildAuthResponse = (user, token, message) => ({
+const setAuthCookie = (res, token) => {
+  res.cookie(AUTH_COOKIE_NAME, token, {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'PRODUCTION',
+    maxAge: AUTH_TTL_MS,
+    path: '/',
+  });
+};
+
+const clearAuthCookie = (res) => {
+  res.clearCookie(AUTH_COOKIE_NAME, {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'PRODUCTION',
+    path: '/',
+  });
+};
+
+const buildAuthResponse = (user, _token, message) => ({
   ...(message ? { message } : {}),
-  token,
   user: {
     id: user._id,
     name: user.name,
@@ -112,6 +132,7 @@ const verifyOTP = async (req, res, next) => {
 
     // Generate token since they're now verified
     const token = generateToken(user);
+    setAuthCookie(res, token);
 
     res.json(buildAuthResponse(user, token, 'Email verified successfully!'));
   } catch (error) {
@@ -183,6 +204,7 @@ const login = async (req, res, next) => {
 
     // Generate token
     const token = generateToken(user);
+    setAuthCookie(res, token);
 
     res.json(buildAuthResponse(user, token));
   } catch (error) {
@@ -300,11 +322,19 @@ const googleAuth = async (req, res, next) => {
     }
 
     const token = generateToken(user);
+    setAuthCookie(res, token);
 
     res.json(buildAuthResponse(user, token));
   } catch (error) {
     next(error);
   }
+};
+
+// @desc    Logout user
+// @route   POST /api/auth/logout
+const logout = async (req, res) => {
+  clearAuthCookie(res);
+  res.json({ message: 'Logged out successfully.' });
 };
 
 // @desc    Get current user profile
@@ -322,6 +352,7 @@ module.exports = {
   verifyOTP,
   resendOTP,
   googleAuth,
+  logout,
   forgotPassword,
   resetPassword,
 };

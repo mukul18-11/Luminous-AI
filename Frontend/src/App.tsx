@@ -6,15 +6,52 @@ import VerifyOTPPage from "./pages/VerifyOTPPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import DashboardPage from "./pages/DashboardPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
+import { getMe } from "./api/auth";
 
-const ProtectedRoute: React.FC<{ children: React.ReactElement }> = ({ children }) => {
-  const token = localStorage.getItem("authToken");
-  return token ? children : <Navigate to="/login" replace />;
-};
+type AuthStatus = "loading" | "authenticated" | "guest";
 
-const PublicOnlyRoute: React.FC<{ children: React.ReactElement }> = ({ children }) => {
-  const token = localStorage.getItem("authToken");
-  return token ? <Navigate to="/dashboard" replace /> : children;
+const RouteGuard: React.FC<{
+  mode: "protected" | "public";
+  children: React.ReactElement;
+}> = ({ mode, children }) => {
+  const [authStatus, setAuthStatus] = React.useState<AuthStatus>("loading");
+
+  React.useEffect(() => {
+    let active = true;
+
+    const checkAuth = async () => {
+      try {
+        await getMe();
+        if (active) {
+          setAuthStatus("authenticated");
+        }
+      } catch {
+        if (active) {
+          setAuthStatus("guest");
+        }
+      }
+    };
+
+    void checkAuth();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  if (authStatus === "loading") {
+    return (
+      <main className="min-h-screen flex items-center justify-center bg-black text-on-surface-variant">
+        Checking your session...
+      </main>
+    );
+  }
+
+  if (mode === "protected") {
+    return authStatus === "authenticated" ? children : <Navigate to="/login" replace />;
+  }
+
+  return authStatus === "authenticated" ? <Navigate to="/dashboard" replace /> : children;
 };
 
 const App: React.FC = () => {
@@ -22,12 +59,54 @@ const App: React.FC = () => {
     <Router>
       <Routes>
         <Route path="/" element={<Navigate to="/login" replace />} />
-        <Route path="/login" element={<PublicOnlyRoute><LoginPage /></PublicOnlyRoute>} />
-        <Route path="/signup" element={<PublicOnlyRoute><SignupPage /></PublicOnlyRoute>} />
-        <Route path="/verify-otp" element={<PublicOnlyRoute><VerifyOTPPage /></PublicOnlyRoute>} />
-        <Route path="/forgot-password" element={<PublicOnlyRoute><ForgotPasswordPage /></PublicOnlyRoute>} />
-        <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-        <Route path="/analytics" element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
+        <Route
+          path="/login"
+          element={
+            <RouteGuard mode="public">
+              <LoginPage />
+            </RouteGuard>
+          }
+        />
+        <Route
+          path="/signup"
+          element={
+            <RouteGuard mode="public">
+              <SignupPage />
+            </RouteGuard>
+          }
+        />
+        <Route
+          path="/verify-otp"
+          element={
+            <RouteGuard mode="public">
+              <VerifyOTPPage />
+            </RouteGuard>
+          }
+        />
+        <Route
+          path="/forgot-password"
+          element={
+            <RouteGuard mode="public">
+              <ForgotPasswordPage />
+            </RouteGuard>
+          }
+        />
+        <Route
+          path="/dashboard"
+          element={
+            <RouteGuard mode="protected">
+              <DashboardPage />
+            </RouteGuard>
+          }
+        />
+        <Route
+          path="/analytics"
+          element={
+            <RouteGuard mode="protected">
+              <AnalyticsPage />
+            </RouteGuard>
+          }
+        />
       </Routes>
     </Router>
   );

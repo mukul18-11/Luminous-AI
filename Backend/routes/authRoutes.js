@@ -9,6 +9,7 @@ const {
   verifyOTP,
   resendOTP,
   googleAuth,
+  logout,
   forgotPassword,
   resetPassword,
 } = require('../controllers/authController');
@@ -84,6 +85,9 @@ router.post(
   validate,
   googleAuth
 );
+
+// POST /api/auth/logout
+router.post('/logout', logout);
 
 // GET /api/auth/me (protected)
 router.get('/me', protect, getMe);

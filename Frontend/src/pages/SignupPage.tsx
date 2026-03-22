@@ -32,7 +32,6 @@ const SignupPage: React.FC = () => {
 
       try {
         const data = await googleAuth(credential);
-        localStorage.setItem("authToken", data.token);
         localStorage.setItem("userName", data.user.name);
         navigate("/dashboard");
       } catch (err: any) {

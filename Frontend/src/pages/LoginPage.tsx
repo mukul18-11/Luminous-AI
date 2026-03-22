@@ -32,7 +32,6 @@ const LoginPage: React.FC = () => {
 
       try {
         const data = await googleAuth(credential);
-        localStorage.setItem("authToken", data.token);
         localStorage.setItem("userName", data.user.name);
         navigate("/dashboard");
       } catch (err: any) {
@@ -69,7 +68,6 @@ const LoginPage: React.FC = () => {
 
     try {
       const data = await login(email, password);
-      localStorage.setItem("authToken", data.token);
       localStorage.setItem("userName", data.user.name);
       navigate("/dashboard");
     } catch (err: any) {

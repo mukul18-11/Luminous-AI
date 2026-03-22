@@ -11,6 +11,7 @@ import {
   getStatusBreakdown,
   getOverdueTasks,
 } from "../api/analytics";
+import { logout } from "../api/auth";
 import { getTasks } from "../api/tasks";
 import type { AnalyticsSummary, StatusBreakdownItem, Task } from "../types";
 
@@ -164,9 +165,10 @@ const AnalyticsPage: React.FC = () => {
       <Navbar
         userName={userName}
         onLogout={() => {
-          localStorage.removeItem("authToken");
-          localStorage.removeItem("userName");
-          navigate("/login");
+          void logout().finally(() => {
+            localStorage.removeItem("userName");
+            navigate("/login");
+          });
         }}
       />
 
