@@ -37,10 +37,6 @@ const SocialLoginButton: React.FC<SocialLoginButtonProps> = ({
   overlay,
 }) => {
   if (provider === "google") {
-    if (overlay) {
-      return <div className="w-full">{overlay}</div>;
-    }
-
     return (
       <div className="relative">
         <button
