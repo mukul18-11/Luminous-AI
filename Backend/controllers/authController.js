@@ -46,7 +46,7 @@ const buildAuthResponse = (user, token, message) => ({
 
 const normalizeEmail = (email) => email.trim().toLowerCase();
 
-// @desc    Register a new user (sends OTP, does NOT return token yet)
+// @desc    Register a new user and sign them in immediately
 // @route   POST /api/auth/signup
 const signup = async (req, res, next) => {
   try {
@@ -60,40 +60,37 @@ const signup = async (req, res, next) => {
       if (existingUser.isVerified) {
         return res.status(409).json({ message: 'Email already registered. Please login.' });
       }
-      // If not verified, resend OTP and update details
-      const otp = generateOTP();
+
+      // Legacy unverified users can complete signup without OTP.
       existingUser.name = name;
       existingUser.password = password;
-      existingUser.otp = otp;
-      existingUser.otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 min
+      existingUser.isVerified = true;
+      existingUser.otp = null;
+      existingUser.otpExpiresAt = null;
       await existingUser.save();
 
-      await sendOTPEmail(normalizedEmail, otp, name);
-      return res.status(200).json({
-        message: 'OTP resent to your email. Please verify.',
-        email: normalizedEmail,
-      });
+      const token = generateToken(existingUser);
+      setAuthCookie(res, token);
+
+      return res.status(200).json(
+        buildAuthResponse(existingUser, token, 'Signup successful! Your account is ready.')
+      );
     }
 
-    // Generate OTP
-    const otp = generateOTP();
-
-    // Create user (unverified)
+    // Create verified user immediately (OTP temporarily removed for signup)
     const user = await User.create({
       name,
       email: normalizedEmail,
       password,
-      otp,
-      otpExpiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
+      isVerified: true,
+      otp: null,
+      otpExpiresAt: null,
     });
 
-    // Send OTP email
-    await sendOTPEmail(normalizedEmail, otp, name);
+    const token = generateToken(user);
+    setAuthCookie(res, token);
 
-    res.status(201).json({
-      message: 'Signup successful! Please check your email for the OTP.',
-      email: user.email,
-    });
+    res.status(201).json(buildAuthResponse(user, token, 'Signup successful!'));
   } catch (error) {
     next(error);
   }
@@ -171,7 +168,7 @@ const resendOTP = async (req, res, next) => {
   }
 };
 
-// @desc    Login user (requires verified email)
+// @desc    Login user
 // @route   POST /api/auth/login
 const login = async (req, res, next) => {
   try {
@@ -188,19 +185,18 @@ const login = async (req, res, next) => {
       return res.status(400).json({ message: 'This account uses Google Sign-In. Please continue with Google.' });
     }
 
-    // Check if email is verified
-    if (!user.isVerified) {
-      return res.status(403).json({
-        message: 'Email not verified. Please verify your email first.',
-        needsVerification: true,
-        email: user.email,
-      });
-    }
-
     // Check password
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
       return res.status(401).json({ message: 'Wrong password. Please try again.' });
+    }
+
+    // Legacy accounts created before OTP removal should become verified after a valid login.
+    if (!user.isVerified) {
+      user.isVerified = true;
+      user.otp = null;
+      user.otpExpiresAt = null;
+      await user.save();
     }
 
     // Generate token

@@ -143,9 +143,13 @@ const SignupPage: React.FC = () => {
     setError("");
 
     try {
-      await signup(name, email, password);
-      localStorage.setItem("pendingUserName", name);
-      navigate("/verify-otp", { state: { email } });
+      const data = await signup(name, email, password);
+      if (data.token) {
+        localStorage.setItem("authToken", data.token);
+      }
+      localStorage.setItem("userName", data.user?.name || name);
+      localStorage.removeItem("pendingUserName");
+      navigate("/dashboard");
     } catch (err: any) {
       setError(
         err.response?.data?.message ||
