@@ -8,6 +8,7 @@ interface KpiCardProps {
   trend?: string;
   trendIcon?: string;
   accentColor?: "primary" | "secondary" | "error" | "tertiary";
+  onIconClick?: () => void;
 }
 
 const accentMap: Record<string, { hover: string; text: string; icon: string }> = {
@@ -40,6 +41,7 @@ const KpiCard: React.FC<KpiCardProps> = ({
   trend,
   trendIcon = "trending_up",
   accentColor = "primary",
+  onIconClick,
 }) => {
   const accent = accentMap[accentColor];
 
@@ -51,7 +53,19 @@ const KpiCard: React.FC<KpiCardProps> = ({
         <span className="text-xs uppercase tracking-widest text-on-surface-variant font-bold">
           {label}
         </span>
-        <MaterialIcon icon={icon} className={accent.icon} />
+        <button
+          type="button"
+          onClick={onIconClick}
+          disabled={!onIconClick}
+          className={`rounded-full transition-all ${
+            onIconClick
+              ? "hover:scale-110 active:scale-95 cursor-pointer"
+              : "cursor-default"
+          }`}
+          aria-label={onIconClick ? `View ${label.toLowerCase()}` : undefined}
+        >
+          <MaterialIcon icon={icon} className={accent.icon} />
+        </button>
       </div>
       <div className={`text-3xl font-extrabold tracking-tighter mb-1 text-white`}>
         {value}

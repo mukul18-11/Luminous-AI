@@ -8,6 +8,10 @@ interface KpiSectionProps {
   overdue: number;
   completionRate: number;
   trendText?: string;
+  onOpenTotalTasks?: () => void;
+  onOpenCompletedTasks?: () => void;
+  onOpenPendingTasks?: () => void;
+  onOpenOverdueTasks?: () => void;
 }
 
 const KpiSection: React.FC<KpiSectionProps> = ({
@@ -17,6 +21,10 @@ const KpiSection: React.FC<KpiSectionProps> = ({
   overdue,
   completionRate,
   trendText = "12% from last month",
+  onOpenTotalTasks,
+  onOpenCompletedTasks,
+  onOpenPendingTasks,
+  onOpenOverdueTasks,
 }) => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
@@ -27,6 +35,7 @@ const KpiSection: React.FC<KpiSectionProps> = ({
         trend={trendText}
         trendIcon="trending_up"
         accentColor="primary"
+        onIconClick={onOpenTotalTasks}
       />
       <KpiCard
         label="Completed"
@@ -35,6 +44,7 @@ const KpiSection: React.FC<KpiSectionProps> = ({
         trend={`${completionRate}% overall rate`}
         trendIcon="bolt"
         accentColor="secondary"
+        onIconClick={onOpenCompletedTasks}
       />
       <KpiCard
         label="Pending"
@@ -43,6 +53,7 @@ const KpiSection: React.FC<KpiSectionProps> = ({
         trend="Awaiting action"
         trendIcon="schedule"
         accentColor="tertiary"
+        onIconClick={onOpenPendingTasks}
       />
       <KpiCard
         label="Overdue"
@@ -51,6 +62,7 @@ const KpiSection: React.FC<KpiSectionProps> = ({
         trend="Needs immediate attention"
         trendIcon="warning"
         accentColor="error"
+        onIconClick={onOpenOverdueTasks}
       />
     </div>
   );
