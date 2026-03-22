@@ -3,14 +3,25 @@ const EMAIL_TIMEOUT_MS = 15000;
 
 // Create a transporter using Gmail SMTP
 const createTransporter = () => {
+  const host = process.env.SMTP_HOST || 'smtp.gmail.com';
+  const port = Number(process.env.SMTP_PORT || 465);
+  const secure = String(process.env.SMTP_SECURE || 'true') === 'true';
+
   return nodemailer.createTransport({
-    service: 'gmail',
+    host,
+    port,
+    secure,
+    requireTLS: !secure,
     connectionTimeout: EMAIL_TIMEOUT_MS,
     greetingTimeout: EMAIL_TIMEOUT_MS,
     socketTimeout: EMAIL_TIMEOUT_MS,
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS, // Gmail App Password (not regular password)
+    },
+    tls: {
+      servername: host,
+      minVersion: 'TLSv1.2',
     },
   });
 };
