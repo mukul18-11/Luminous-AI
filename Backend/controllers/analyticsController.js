@@ -1,5 +1,5 @@
 const Task = require('../models/Task');
-const { computeAnalyticsSummary } = require('../services/analyticsService');
+const { computeAnalyticsSummary, getOverdueTasksForUser } = require('../services/analyticsService');
 
 // @desc    Get overall analytics summary
 // @route   GET /api/analytics/summary
@@ -77,13 +77,7 @@ const getStatusBreakdown = async (req, res, next) => {
 const getOverdueTasks = async (req, res, next) => {
   try {
     const userId = req.user._id;
-    const now = new Date();
-
-    const tasks = await Task.find({
-      user: userId,
-      status: { $in: ['pending', 'delayed'] },
-      dueDate: { $lt: now, $ne: null },
-    }).sort({ dueDate: 1 });
+    const tasks = await getOverdueTasksForUser(userId);
 
     res.json({ tasks });
   } catch (error) {
