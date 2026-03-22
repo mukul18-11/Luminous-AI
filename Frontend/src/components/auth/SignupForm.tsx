@@ -11,6 +11,7 @@ interface SignupFormProps {
   isLoading?: boolean;
   isGoogleLoading?: boolean;
   error?: string;
+  googleOverlay?: React.ReactNode;
 }
 
 const SignupForm: React.FC<SignupFormProps> = ({
@@ -19,6 +20,7 @@ const SignupForm: React.FC<SignupFormProps> = ({
   isLoading = false,
   isGoogleLoading = false,
   error,
+  googleOverlay,
 }) => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -124,6 +126,7 @@ const SignupForm: React.FC<SignupFormProps> = ({
           provider="google"
           onClick={onGoogleSignIn}
           label={isGoogleLoading ? "Connecting to Google..." : "Sign in with Google"}
+          overlay={googleOverlay}
         />
       </form>
 

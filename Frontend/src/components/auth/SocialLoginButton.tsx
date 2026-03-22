@@ -5,6 +5,7 @@ interface SocialLoginButtonProps {
   onClick?: () => void;
   label?: string;
   disabled?: boolean;
+  overlay?: React.ReactNode;
 }
 
 const GoogleIcon = () => (
@@ -33,18 +34,22 @@ const SocialLoginButton: React.FC<SocialLoginButtonProps> = ({
   onClick,
   label,
   disabled = false,
+  overlay,
 }) => {
   if (provider === "google") {
     return (
-      <button
-        type="button"
-        onClick={onClick}
-        disabled={disabled}
-        className="w-full flex justify-center items-center gap-3 py-3 border border-outline-variant rounded-lg hover:bg-neutral-900 disabled:opacity-60 disabled:cursor-not-allowed transition-colors font-semibold text-white"
-      >
-        <GoogleIcon />
-        {label || "Sign in with Google"}
-      </button>
+      <div className="relative">
+        <button
+          type="button"
+          onClick={onClick}
+          disabled={disabled}
+          className="w-full flex justify-center items-center gap-3 py-3 border border-outline-variant rounded-lg hover:bg-neutral-900 disabled:opacity-60 disabled:cursor-not-allowed transition-colors font-semibold text-white"
+        >
+          <GoogleIcon />
+          {label || "Sign in with Google"}
+        </button>
+        {overlay}
+      </div>
     );
   }
 
