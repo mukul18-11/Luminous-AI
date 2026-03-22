@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import OTPInput from "../components/auth/OTPInput";
 import MaterialIcon from "../components/ui/MaterialIcon";
+import { resendOTP, verifyOTP } from "../api/auth";
 
 const VerifyOTPPage: React.FC = () => {
   const navigate = useNavigate();
@@ -31,27 +32,22 @@ const VerifyOTPPage: React.FC = () => {
   const handleOTPComplete = async (otp: string) => {
     setIsVerifying(true);
     setError("");
+    setSuccess("");
 
-    // TODO: Replace with actual API call
-    // const res = await fetch('/api/auth/verify-otp', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({ email, otp }),
-    // });
-    // const data = await res.json();
-
-    // Simulate verification for now
-    setTimeout(() => {
+    try {
+      const data = await verifyOTP(email, otp);
+      localStorage.setItem("authToken", data.token);
+      localStorage.setItem(
+        "userName",
+        localStorage.getItem("pendingUserName") || data.user.name || email.split("@")[0]
+      );
+      localStorage.removeItem("pendingUserName");
+      navigate("/dashboard");
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Invalid OTP. Please try again.");
+    } finally {
       setIsVerifying(false);
-      // Simulate success — in real app, check response
-      if (otp === "123456") {
-        // Store token from API response
-        localStorage.setItem("userName", email.split("@")[0]);
-        navigate("/dashboard");
-      } else {
-        setError("Invalid OTP. Please try again.");
-      }
-    }, 1500);
+    }
   };
 
   const handleResend = async () => {
@@ -59,20 +55,18 @@ const VerifyOTPPage: React.FC = () => {
 
     setIsResending(true);
     setError("");
+    setSuccess("");
 
-    // TODO: Replace with actual API call
-    // const res = await fetch('/api/auth/resend-otp', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({ email }),
-    // });
-
-    setTimeout(() => {
-      setIsResending(false);
-      setSuccess("New OTP sent to your email!");
+    try {
+      const data = await resendOTP(email);
+      setSuccess(data.message || "New OTP sent to your email!");
       startCooldown();
       setTimeout(() => setSuccess(""), 3000);
-    }, 1000);
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Unable to resend OTP right now.");
+    } finally {
+      setIsResending(false);
+    }
   };
 
   return (

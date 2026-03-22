@@ -21,6 +21,20 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  avatar?: string | null;
+  authProvider?: "local" | "google";
+}
+
+export interface ParsedVoiceTask {
+  title: string;
+  description: string;
+  dueDate: string | null;
+  dueTime: string | null;
+  priority: "low" | "medium" | "high";
+  clarificationNeeded: boolean;
+  clarificationQuestion: string;
+  refinedText: string;
+  missingFields: string[];
 }
 
 export interface KpiData {

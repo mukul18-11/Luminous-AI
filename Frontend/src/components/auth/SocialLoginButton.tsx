@@ -3,6 +3,8 @@ import React from "react";
 interface SocialLoginButtonProps {
   provider: "google";
   onClick?: () => void;
+  label?: string;
+  disabled?: boolean;
 }
 
 const GoogleIcon = () => (
@@ -26,16 +28,22 @@ const GoogleIcon = () => (
   </svg>
 );
 
-const SocialLoginButton: React.FC<SocialLoginButtonProps> = ({ provider, onClick }) => {
+const SocialLoginButton: React.FC<SocialLoginButtonProps> = ({
+  provider,
+  onClick,
+  label,
+  disabled = false,
+}) => {
   if (provider === "google") {
     return (
       <button
         type="button"
         onClick={onClick}
-        className="w-full flex justify-center items-center gap-3 py-3 border border-outline-variant rounded-lg hover:bg-neutral-900 transition-colors font-semibold text-white"
+        disabled={disabled}
+        className="w-full flex justify-center items-center gap-3 py-3 border border-outline-variant rounded-lg hover:bg-neutral-900 disabled:opacity-60 disabled:cursor-not-allowed transition-colors font-semibold text-white"
       >
         <GoogleIcon />
-        Sign in with Google
+        {label || "Sign in with Google"}
       </button>
     );
   }

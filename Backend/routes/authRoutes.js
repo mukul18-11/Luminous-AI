@@ -2,7 +2,7 @@ const express = require('express');
 const { body } = require('express-validator');
 const validate = require('../middleware/validate');
 const { protect } = require('../middleware/authMiddleware');
-const { signup, login, getMe, verifyOTP, resendOTP } = require('../controllers/authController');
+const { signup, login, getMe, verifyOTP, resendOTP, googleAuth } = require('../controllers/authController');
 
 const router = express.Router();
 
@@ -46,6 +46,14 @@ router.post(
   ],
   validate,
   login
+);
+
+// POST /api/auth/google
+router.post(
+  '/google',
+  [body('credential').notEmpty().withMessage('Google credential is required')],
+  validate,
+  googleAuth
 );
 
 // GET /api/auth/me (protected)

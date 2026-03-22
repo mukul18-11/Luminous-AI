@@ -3,14 +3,23 @@ import { Link } from "react-router-dom";
 import Input from "../ui/Input";
 import Button from "../ui/Button";
 import MaterialIcon from "../ui/MaterialIcon";
+import SocialLoginButton from "./SocialLoginButton";
 
 interface SignupFormProps {
   onSubmit: (name: string, email: string, password: string) => void;
+  onGoogleSignIn?: () => void;
   isLoading?: boolean;
+  isGoogleLoading?: boolean;
   error?: string;
 }
 
-const SignupForm: React.FC<SignupFormProps> = ({ onSubmit, isLoading = false, error }) => {
+const SignupForm: React.FC<SignupFormProps> = ({
+  onSubmit,
+  onGoogleSignIn,
+  isLoading = false,
+  isGoogleLoading = false,
+  error,
+}) => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -110,6 +119,12 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSubmit, isLoading = false, er
         <Button type="submit" variant="primary" size="lg" fullWidth disabled={isLoading}>
           {isLoading ? "Creating account..." : "Sign up"}
         </Button>
+
+        <SocialLoginButton
+          provider="google"
+          onClick={onGoogleSignIn}
+          label={isGoogleLoading ? "Connecting to Google..." : "Sign in with Google"}
+        />
       </form>
 
       {/* Login Link */}

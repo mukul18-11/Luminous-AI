@@ -7,11 +7,19 @@ import MaterialIcon from "../ui/MaterialIcon";
 
 interface LoginFormProps {
   onSubmit: (email: string, password: string) => void;
+  onGoogleSignIn?: () => void;
   isLoading?: boolean;
+  isGoogleLoading?: boolean;
   error?: string;
 }
 
-const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, isLoading = false, error }) => {
+const LoginForm: React.FC<LoginFormProps> = ({
+  onSubmit,
+  onGoogleSignIn,
+  isLoading = false,
+  isGoogleLoading = false,
+  error,
+}) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -84,7 +92,11 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, isLoading = false, erro
         </Button>
 
         {/* Social Login */}
-        <SocialLoginButton provider="google" />
+        <SocialLoginButton
+          provider="google"
+          onClick={onGoogleSignIn}
+          label={isGoogleLoading ? "Connecting to Google..." : "Sign in with Google"}
+        />
       </form>
 
       {/* Sign Up Link */}

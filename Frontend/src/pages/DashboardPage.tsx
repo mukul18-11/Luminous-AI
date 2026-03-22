@@ -242,7 +242,11 @@ const DashboardPage: React.FC = () => {
 
   return (
     <>
-      <Navbar userName={userName} onLogout={() => { localStorage.removeItem("userName"); navigate("/login"); }} />
+      <Navbar userName={userName} onLogout={() => {
+        localStorage.removeItem("authToken");
+        localStorage.removeItem("userName");
+        navigate("/login");
+      }} />
 
       <main className="pt-32 pb-20 px-6 max-w-7xl mx-auto">
         <HeroGreeting userName={userName} />
