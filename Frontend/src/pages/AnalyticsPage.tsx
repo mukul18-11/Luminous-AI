@@ -166,6 +166,7 @@ const AnalyticsPage: React.FC = () => {
         userName={userName}
         onLogout={() => {
           void logout().finally(() => {
+            localStorage.removeItem("authToken");
             localStorage.removeItem("userName");
             navigate("/login");
           });

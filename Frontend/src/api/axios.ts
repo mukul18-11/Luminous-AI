@@ -8,6 +8,17 @@ const api = axios.create({
   withCredentials: true,
 });
 
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('authToken');
+
+  if (token) {
+    config.headers = config.headers || {};
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+
+  return config;
+});
+
 // Handle 401 responses (token expired/invalid)
 api.interceptors.response.use(
   (response) => response,
@@ -16,6 +27,7 @@ api.interceptors.response.use(
     const isAuthRequest = requestUrl.startsWith("/auth/");
 
     if (error.response?.status === 401 && !isAuthRequest) {
+      localStorage.removeItem('authToken');
       localStorage.removeItem('userName');
       window.location.href = '/login';
     }

@@ -12,6 +12,17 @@ declare global {
             client_id: string;
             callback: (response: { credential: string }) => void;
           }) => void;
+          renderButton: (
+            parent: HTMLElement,
+            options: {
+              type?: string;
+              theme?: string;
+              size?: string;
+              text?: string;
+              shape?: string;
+              width?: number | string;
+            }
+          ) => void;
           prompt: () => void;
         };
       };
@@ -24,6 +35,7 @@ const LoginPage: React.FC = () => {
   const [error, setError] = React.useState("");
   const [isLoading, setIsLoading] = React.useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = React.useState(false);
+  const googleButtonHostRef = React.useRef<HTMLDivElement | null>(null);
 
   const handleGoogleCredential = React.useCallback(
     async (credential: string) => {
@@ -32,6 +44,9 @@ const LoginPage: React.FC = () => {
 
       try {
         const data = await googleAuth(credential);
+        if (data.token) {
+          localStorage.setItem("authToken", data.token);
+        }
         localStorage.setItem("userName", data.user.name);
         navigate("/dashboard");
       } catch (err: any) {
@@ -60,6 +75,18 @@ const LoginPage: React.FC = () => {
         }
       },
     });
+
+    if (googleButtonHostRef.current) {
+      googleButtonHostRef.current.innerHTML = "";
+      window.google.accounts.id.renderButton(googleButtonHostRef.current, {
+        type: "standard",
+        theme: "outline",
+        size: "large",
+        text: "signin_with",
+        shape: "rectangular",
+        width: 380,
+      });
+    }
   }, [handleGoogleCredential]);
 
   const handleLogin = async (email: string, password: string) => {
@@ -68,6 +95,9 @@ const LoginPage: React.FC = () => {
 
     try {
       const data = await login(email, password);
+      if (data.token) {
+        localStorage.setItem("authToken", data.token);
+      }
       localStorage.setItem("userName", data.user.name);
       navigate("/dashboard");
     } catch (err: any) {
@@ -104,7 +134,16 @@ const LoginPage: React.FC = () => {
     }
 
     setError("");
-    window.google.accounts.id.prompt();
+    const renderedGoogleButton = googleButtonHostRef.current?.querySelector("div[role='button'], iframe") as
+      | HTMLElement
+      | null;
+
+    if (!renderedGoogleButton) {
+      setError("Google Sign-In is still loading. Refresh once and try again.");
+      return;
+    }
+
+    renderedGoogleButton.click();
   };
 
   return (
@@ -115,6 +154,11 @@ const LoginPage: React.FC = () => {
         isLoading={isLoading}
         isGoogleLoading={isGoogleLoading}
         error={error}
+        googleOverlay={
+          <div className="absolute inset-0 overflow-hidden rounded-lg opacity-0 pointer-events-none">
+            <div ref={googleButtonHostRef} className="h-full w-full pointer-events-auto" />
+          </div>
+        }
       />
     </main>
   );

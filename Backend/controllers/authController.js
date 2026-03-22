@@ -32,8 +32,9 @@ const clearAuthCookie = (res) => {
   });
 };
 
-const buildAuthResponse = (user, _token, message) => ({
+const buildAuthResponse = (user, token, message) => ({
   ...(message ? { message } : {}),
+  ...(token ? { token } : {}),
   user: {
     id: user._id,
     name: user.name,

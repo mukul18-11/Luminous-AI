@@ -36,6 +36,9 @@ const VerifyOTPPage: React.FC = () => {
 
     try {
       const data = await verifyOTP(email, otp);
+      if (data.token) {
+        localStorage.setItem("authToken", data.token);
+      }
       localStorage.setItem(
         "userName",
         localStorage.getItem("pendingUserName") || data.user.name || email.split("@")[0]

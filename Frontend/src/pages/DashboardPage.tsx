@@ -481,10 +481,11 @@ const DashboardPage: React.FC = () => {
       <Navbar
         userName={userName}
         onLogout={() => {
-          void logout().finally(() => {
-            localStorage.removeItem("userName");
-            navigate("/login");
-          });
+      void logout().finally(() => {
+        localStorage.removeItem("authToken");
+        localStorage.removeItem("userName");
+        navigate("/login");
+      });
         }}
       />
 

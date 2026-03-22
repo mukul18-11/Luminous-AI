@@ -6,52 +6,15 @@ import VerifyOTPPage from "./pages/VerifyOTPPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import DashboardPage from "./pages/DashboardPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
-import { getMe } from "./api/auth";
 
-type AuthStatus = "loading" | "authenticated" | "guest";
+const ProtectedRoute: React.FC<{ children: React.ReactElement }> = ({ children }) => {
+  const token = localStorage.getItem("authToken");
+  return token ? children : <Navigate to="/login" replace />;
+};
 
-const RouteGuard: React.FC<{
-  mode: "protected" | "public";
-  children: React.ReactElement;
-}> = ({ mode, children }) => {
-  const [authStatus, setAuthStatus] = React.useState<AuthStatus>("loading");
-
-  React.useEffect(() => {
-    let active = true;
-
-    const checkAuth = async () => {
-      try {
-        await getMe();
-        if (active) {
-          setAuthStatus("authenticated");
-        }
-      } catch {
-        if (active) {
-          setAuthStatus("guest");
-        }
-      }
-    };
-
-    void checkAuth();
-
-    return () => {
-      active = false;
-    };
-  }, []);
-
-  if (authStatus === "loading") {
-    return (
-      <main className="min-h-screen flex items-center justify-center bg-black text-on-surface-variant">
-        Checking your session...
-      </main>
-    );
-  }
-
-  if (mode === "protected") {
-    return authStatus === "authenticated" ? children : <Navigate to="/login" replace />;
-  }
-
-  return authStatus === "authenticated" ? <Navigate to="/dashboard" replace /> : children;
+const PublicRoute: React.FC<{ children: React.ReactElement }> = ({ children }) => {
+  const token = localStorage.getItem("authToken");
+  return token ? <Navigate to="/dashboard" replace /> : children;
 };
 
 const App: React.FC = () => {
@@ -62,49 +25,49 @@ const App: React.FC = () => {
         <Route
           path="/login"
           element={
-            <RouteGuard mode="public">
+            <PublicRoute>
               <LoginPage />
-            </RouteGuard>
+            </PublicRoute>
           }
         />
         <Route
           path="/signup"
           element={
-            <RouteGuard mode="public">
+            <PublicRoute>
               <SignupPage />
-            </RouteGuard>
+            </PublicRoute>
           }
         />
         <Route
           path="/verify-otp"
           element={
-            <RouteGuard mode="public">
+            <PublicRoute>
               <VerifyOTPPage />
-            </RouteGuard>
+            </PublicRoute>
           }
         />
         <Route
           path="/forgot-password"
           element={
-            <RouteGuard mode="public">
+            <PublicRoute>
               <ForgotPasswordPage />
-            </RouteGuard>
+            </PublicRoute>
           }
         />
         <Route
           path="/dashboard"
           element={
-            <RouteGuard mode="protected">
+            <ProtectedRoute>
               <DashboardPage />
-            </RouteGuard>
+            </ProtectedRoute>
           }
         />
         <Route
           path="/analytics"
           element={
-            <RouteGuard mode="protected">
+            <ProtectedRoute>
               <AnalyticsPage />
-            </RouteGuard>
+            </ProtectedRoute>
           }
         />
       </Routes>
