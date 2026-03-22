@@ -81,9 +81,12 @@ const LoginForm: React.FC<LoginFormProps> = ({
 
         {/* Forgot Password */}
         <div className="flex items-center justify-end">
-          <a className="text-sm font-bold text-primary hover:text-primary-dim transition-colors" href="#">
+          <Link
+            to="/forgot-password"
+            className="text-sm font-bold text-primary hover:text-primary-dim transition-colors"
+          >
             Forgot password
-          </a>
+          </Link>
         </div>
 
         {/* Submit */}

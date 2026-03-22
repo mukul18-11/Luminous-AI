@@ -23,14 +23,17 @@ const buildAuthResponse = (user, token, message) => ({
   },
 });
 
+const normalizeEmail = (email) => email.trim().toLowerCase();
+
 // @desc    Register a new user (sends OTP, does NOT return token yet)
 // @route   POST /api/auth/signup
 const signup = async (req, res, next) => {
   try {
     const { name, email, password } = req.body;
+    const normalizedEmail = normalizeEmail(email);
 
     // Check if user already exists
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ email: normalizedEmail });
     if (existingUser) {
       // If already verified, tell them to login
       if (existingUser.isVerified) {
@@ -44,10 +47,10 @@ const signup = async (req, res, next) => {
       existingUser.otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 min
       await existingUser.save();
 
-      await sendOTPEmail(email, otp, name);
+      await sendOTPEmail(normalizedEmail, otp, name);
       return res.status(200).json({
         message: 'OTP resent to your email. Please verify.',
-        email,
+        email: normalizedEmail,
       });
     }
 
@@ -57,14 +60,14 @@ const signup = async (req, res, next) => {
     // Create user (unverified)
     const user = await User.create({
       name,
-      email,
+      email: normalizedEmail,
       password,
       otp,
       otpExpiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
     });
 
     // Send OTP email
-    await sendOTPEmail(email, otp, name);
+    await sendOTPEmail(normalizedEmail, otp, name);
 
     res.status(201).json({
       message: 'Signup successful! Please check your email for the OTP.',
@@ -80,8 +83,9 @@ const signup = async (req, res, next) => {
 const verifyOTP = async (req, res, next) => {
   try {
     const { email, otp } = req.body;
+    const normalizedEmail = normalizeEmail(email);
 
-    const user = await User.findOne({ email }).select('+otp +otpExpiresAt');
+    const user = await User.findOne({ email: normalizedEmail }).select('+otp +otpExpiresAt');
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
@@ -120,8 +124,9 @@ const verifyOTP = async (req, res, next) => {
 const resendOTP = async (req, res, next) => {
   try {
     const { email } = req.body;
+    const normalizedEmail = normalizeEmail(email);
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: normalizedEmail });
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
@@ -136,7 +141,7 @@ const resendOTP = async (req, res, next) => {
     user.otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
     await user.save();
 
-    await sendOTPEmail(email, otp, user.name);
+    await sendOTPEmail(normalizedEmail, otp, user.name);
 
     res.json({ message: 'New OTP sent to your email.' });
   } catch (error) {
@@ -149,11 +154,12 @@ const resendOTP = async (req, res, next) => {
 const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
+    const normalizedEmail = normalizeEmail(email);
 
     // Find user by email
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: normalizedEmail });
     if (!user) {
-      return res.status(401).json({ message: 'Invalid email or password' });
+      return res.status(404).json({ message: 'No account found with this email. Please sign up first.' });
     }
 
     if (user.authProvider === 'google' && !user.password) {
@@ -172,13 +178,75 @@ const login = async (req, res, next) => {
     // Check password
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
-      return res.status(401).json({ message: 'Invalid email or password' });
+      return res.status(401).json({ message: 'Wrong password. Please try again.' });
     }
 
     // Generate token
     const token = generateToken(user);
 
     res.json(buildAuthResponse(user, token));
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Send forgot-password OTP
+// @route   POST /api/auth/forgot-password
+const forgotPassword = async (req, res, next) => {
+  try {
+    const normalizedEmail = normalizeEmail(req.body.email);
+    const user = await User.findOne({ email: normalizedEmail });
+
+    if (!user) {
+      return res.status(404).json({ message: 'No account found with this email. Please sign up first.' });
+    }
+
+    if (user.authProvider === 'google' && !user.password) {
+      return res.status(400).json({
+        message: 'This account uses Google Sign-In. Use Google to sign in instead of resetting a password.',
+      });
+    }
+
+    const otp = generateOTP();
+    user.resetPasswordOtp = otp;
+    user.resetPasswordOtpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
+    await user.save();
+
+    await sendOTPEmail(normalizedEmail, otp, user.name);
+
+    res.json({ message: 'Password reset OTP sent to your email.', email: normalizedEmail });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Reset password with OTP
+// @route   POST /api/auth/reset-password
+const resetPassword = async (req, res, next) => {
+  try {
+    const normalizedEmail = normalizeEmail(req.body.email);
+    const { otp, password } = req.body;
+
+    const user = await User.findOne({ email: normalizedEmail }).select('+resetPasswordOtp +resetPasswordOtpExpiresAt');
+
+    if (!user) {
+      return res.status(404).json({ message: 'No account found with this email. Please sign up first.' });
+    }
+
+    if (!user.resetPasswordOtp || user.resetPasswordOtp !== otp) {
+      return res.status(400).json({ message: 'Invalid OTP. Please try again.' });
+    }
+
+    if (!user.resetPasswordOtpExpiresAt || user.resetPasswordOtpExpiresAt < new Date()) {
+      return res.status(400).json({ message: 'OTP has expired. Please request a new one.' });
+    }
+
+    user.password = password;
+    user.resetPasswordOtp = null;
+    user.resetPasswordOtpExpiresAt = null;
+    await user.save();
+
+    res.json({ message: 'Password reset successful. You can now sign in.' });
   } catch (error) {
     next(error);
   }
@@ -247,4 +315,13 @@ const getMe = async (req, res) => {
   });
 };
 
-module.exports = { signup, login, getMe, verifyOTP, resendOTP, googleAuth };
+module.exports = {
+  signup,
+  login,
+  getMe,
+  verifyOTP,
+  resendOTP,
+  googleAuth,
+  forgotPassword,
+  resetPassword,
+};
