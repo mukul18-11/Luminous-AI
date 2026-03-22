@@ -132,18 +132,6 @@ const LoginPage: React.FC = () => {
       setError("Google Sign-In script is not loaded yet. Refresh and try again.");
       return;
     }
-
-    setError("");
-    const renderedGoogleButton = googleButtonHostRef.current?.querySelector("div[role='button'], iframe") as
-      | HTMLElement
-      | null;
-
-    if (!renderedGoogleButton) {
-      setError("Google Sign-In is still loading. Refresh once and try again.");
-      return;
-    }
-
-    renderedGoogleButton.click();
   };
 
   return (
@@ -155,8 +143,8 @@ const LoginPage: React.FC = () => {
         isGoogleLoading={isGoogleLoading}
         error={error}
         googleOverlay={
-          <div className="absolute inset-0 overflow-hidden rounded-lg opacity-0 pointer-events-none">
-            <div ref={googleButtonHostRef} className="h-full w-full pointer-events-auto" />
+          <div className="absolute inset-0 z-10 overflow-hidden rounded-lg opacity-0">
+            <div ref={googleButtonHostRef} className="h-full w-full" />
           </div>
         }
       />
