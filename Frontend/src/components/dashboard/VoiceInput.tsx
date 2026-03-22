@@ -37,6 +37,7 @@ const VoiceInput: React.FC<VoiceInputProps> = ({
         />
         <button
           onClick={onMicClick}
+          type="button"
           className={`
             p-5 rounded-full text-black shadow-lg transition-all active:scale-90 group-hover:scale-105
             ${
@@ -48,6 +49,16 @@ const VoiceInput: React.FC<VoiceInputProps> = ({
         >
           <MaterialIcon icon={isListening ? "stop" : "mic"} filled />
         </button>
+        {value.trim() && (
+          <button
+            type="button"
+            onClick={onSubmit}
+            className="ml-2 p-4 rounded-full bg-primary/15 text-primary border border-primary/20 hover:bg-primary/20 transition-all active:scale-95"
+            title="Send task"
+          >
+            <MaterialIcon icon="arrow_upward" filled size="sm" />
+          </button>
+        )}
       </div>
 
       {/* Decorative Background Accent */}
@@ -56,7 +67,7 @@ const VoiceInput: React.FC<VoiceInputProps> = ({
       {/* Listening indicator */}
       {isListening && (
         <p className="text-center mt-4 text-primary text-sm font-bold animate-pulse">
-          Listening... Speak now
+          Listening... Click again to stop or pause for 2 seconds
         </p>
       )}
     </section>

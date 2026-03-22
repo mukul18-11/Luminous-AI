@@ -1,53 +1,12 @@
 const Task = require('../models/Task');
+const { computeAnalyticsSummary } = require('../services/analyticsService');
 
 // @desc    Get overall analytics summary
 // @route   GET /api/analytics/summary
 const getSummary = async (req, res, next) => {
   try {
-    const userId = req.user._id;
-    const now = new Date();
-
-    const [total, completed, pending, cancelled, delayed] = await Promise.all([
-      Task.countDocuments({ user: userId }),
-      Task.countDocuments({ user: userId, status: 'completed' }),
-      Task.countDocuments({ user: userId, status: 'pending' }),
-      Task.countDocuments({ user: userId, status: 'cancelled' }),
-      Task.countDocuments({ user: userId, status: 'delayed' }),
-    ]);
-
-    // Completed on time: completedAt <= dueDate
-    const completedOnTime = await Task.countDocuments({
-      user: userId,
-      status: 'completed',
-      dueDate: { $ne: null },
-      $expr: { $lte: ['$completedAt', '$dueDate'] },
-    });
-
-    // Completed late: completedAt > dueDate
-    const completedLate = await Task.countDocuments({
-      user: userId,
-      status: 'completed',
-      dueDate: { $ne: null },
-      $expr: { $gt: ['$completedAt', '$dueDate'] },
-    });
-
-    // Currently overdue: pending/delayed + dueDate < now
-    const overdue = await Task.countDocuments({
-      user: userId,
-      status: { $in: ['pending', 'delayed'] },
-      dueDate: { $lt: now, $ne: null },
-    });
-
-    res.json({
-      total,
-      completed,
-      pending,
-      cancelled,
-      delayed,
-      completedOnTime,
-      completedLate,
-      overdue,
-    });
+    const summary = await computeAnalyticsSummary(req.user._id);
+    res.json(summary);
   } catch (error) {
     next(error);
   }

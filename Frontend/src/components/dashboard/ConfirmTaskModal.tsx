@@ -13,34 +13,41 @@ interface ConfirmTaskModalProps {
   isOpen: boolean;
   parsedTask: ParsedTaskData | null;
   clarificationQuestion: string | null;
+  clarificationAnswer: string;
+  isClarifyListening?: boolean;
+  isProcessing?: boolean;
   onConfirm: (task: ParsedTaskData) => void;
   onCancel: () => void;
   onChange: (field: string, value: string) => void;
+  onClarificationAnswerChange: (value: string) => void;
   onClarify?: (answer: string) => void;
+  onClarifyMicClick?: () => void;
 }
 
 const ConfirmTaskModal: React.FC<ConfirmTaskModalProps> = ({
   isOpen,
   parsedTask,
   clarificationQuestion,
+  clarificationAnswer,
+  isClarifyListening = false,
+  isProcessing = false,
   onConfirm,
   onCancel,
   onChange,
+  onClarificationAnswerChange,
   onClarify,
+  onClarifyMicClick,
 }) => {
-  const [clarifyAnswer, setClarifyAnswer] = React.useState("");
-
   if (!isOpen || !parsedTask) return null;
 
   const handleClarify = () => {
-    if (clarifyAnswer.trim() && onClarify) {
-      onClarify(clarifyAnswer.trim());
-      setClarifyAnswer("");
+    if (clarificationAnswer.trim() && onClarify) {
+      onClarify(clarificationAnswer.trim());
     }
   };
 
   const handleClarifyKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && clarifyAnswer.trim()) {
+    if (e.key === "Enter" && clarificationAnswer.trim()) {
       handleClarify();
     }
   };
@@ -85,21 +92,38 @@ const ConfirmTaskModal: React.FC<ConfirmTaskModalProps> = ({
             <div className="flex gap-2">
               <input
                 type="text"
-                value={clarifyAnswer}
-                onChange={(e) => setClarifyAnswer(e.target.value)}
+                value={clarificationAnswer}
+                onChange={(e) => onClarificationAnswerChange(e.target.value)}
                 onKeyDown={handleClarifyKeyDown}
                 placeholder="Type your answer..."
                 className="flex-1 bg-surface-container-high border border-white/10 rounded-lg py-2 px-3 text-white text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
                 autoFocus
               />
+              {onClarifyMicClick && (
+                <button
+                  type="button"
+                  onClick={onClarifyMicClick}
+                  className={`px-3 rounded-lg border transition-all ${
+                    isClarifyListening
+                      ? "border-error/40 bg-error text-black animate-pulse"
+                      : "border-primary/20 bg-primary/15 text-primary hover:bg-primary/20"
+                  }`}
+                  title={isClarifyListening ? "Stop listening" : "Answer by voice"}
+                >
+                  <MaterialIcon icon={isClarifyListening ? "stop" : "mic"} filled size="sm" />
+                </button>
+              )}
               <button
                 onClick={handleClarify}
-                disabled={!clarifyAnswer.trim()}
+                disabled={!clarificationAnswer.trim() || isProcessing}
                 className="px-4 py-2 rounded-lg bg-primary text-black text-sm font-bold disabled:opacity-40 hover:shadow-primary/30 hover:shadow-lg transition-all"
               >
-                Send
+                {isProcessing ? "Thinking..." : "Send"}
               </button>
             </div>
+            {isClarifyListening && (
+              <p className="mt-2 text-xs text-primary font-semibold">Listening for your answer...</p>
+            )}
           </div>
         )}
 
@@ -189,9 +213,10 @@ const ConfirmTaskModal: React.FC<ConfirmTaskModalProps> = ({
           </button>
           <button
             onClick={() => onConfirm(parsedTask)}
+            disabled={isProcessing}
             className="flex-1 py-2.5 rounded-lg bg-primary text-black font-bold text-sm shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all"
           >
-            Create Task
+            {isProcessing ? "Saving..." : "Create Task"}
           </button>
         </div>
       </div>

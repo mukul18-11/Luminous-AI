@@ -1,5 +1,6 @@
 const Task = require('../models/Task');
 const { parseVoiceText } = require('../services/openaiService');
+const { refreshUserAnalytics } = require('../services/analyticsService');
 
 // @desc    Get all tasks for logged-in user
 // @route   GET /api/tasks
@@ -37,7 +38,9 @@ const createTask = async (req, res, next) => {
       voiceInput: voiceInput || null,
     });
 
-    res.status(201).json({ task });
+    const analytics = await refreshUserAnalytics(req.user._id);
+
+    res.status(201).json({ task, analytics });
   } catch (error) {
     next(error);
   }
@@ -61,7 +64,8 @@ const updateTask = async (req, res, next) => {
     });
 
     await task.save();
-    res.json({ task });
+    const analytics = await refreshUserAnalytics(req.user._id);
+    res.json({ task, analytics });
   } catch (error) {
     next(error);
   }
@@ -77,7 +81,8 @@ const deleteTask = async (req, res, next) => {
       return res.status(404).json({ message: 'Task not found' });
     }
 
-    res.json({ message: 'Task deleted' });
+    const analytics = await refreshUserAnalytics(req.user._id);
+    res.json({ message: 'Task deleted', analytics });
   } catch (error) {
     next(error);
   }
@@ -97,7 +102,8 @@ const completeTask = async (req, res, next) => {
     task.completedAt = new Date();
     await task.save();
 
-    res.json({ task });
+    const analytics = await refreshUserAnalytics(req.user._id);
+    res.json({ task, analytics });
   } catch (error) {
     next(error);
   }
@@ -116,7 +122,8 @@ const cancelTask = async (req, res, next) => {
     task.status = 'cancelled';
     await task.save();
 
-    res.json({ task });
+    const analytics = await refreshUserAnalytics(req.user._id);
+    res.json({ task, analytics });
   } catch (error) {
     next(error);
   }
@@ -148,7 +155,8 @@ const delayTask = async (req, res, next) => {
     task.status = 'delayed';
     await task.save();
 
-    res.json({ task });
+    const analytics = await refreshUserAnalytics(req.user._id);
+    res.json({ task, analytics });
   } catch (error) {
     next(error);
   }
