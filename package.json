@@ -1,0 +1,11 @@
+{
+  "name": "ai-powered-voice-enabled-todo-app",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "concurrently -n backend,frontend -c green,cyan \"npm --prefix Backend run dev\" \"npm --prefix Frontend run dev\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
