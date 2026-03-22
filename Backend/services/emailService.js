@@ -1,9 +1,13 @@
 const nodemailer = require('nodemailer');
+const EMAIL_TIMEOUT_MS = 15000;
 
 // Create a transporter using Gmail SMTP
 const createTransporter = () => {
   return nodemailer.createTransport({
     service: 'gmail',
+    connectionTimeout: EMAIL_TIMEOUT_MS,
+    greetingTimeout: EMAIL_TIMEOUT_MS,
+    socketTimeout: EMAIL_TIMEOUT_MS,
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS, // Gmail App Password (not regular password)
@@ -56,7 +60,16 @@ const sendOTPEmail = async (email, otp, name) => {
     `,
   };
 
-  await transporter.sendMail(mailOptions);
+  try {
+    await Promise.race([
+      transporter.sendMail(mailOptions),
+      new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Email service timed out while sending OTP.')), EMAIL_TIMEOUT_MS);
+      }),
+    ]);
+  } catch (error) {
+    throw new Error(`Failed to send OTP email: ${error.message}`);
+  }
 };
 
 module.exports = { generateOTP, sendOTPEmail };

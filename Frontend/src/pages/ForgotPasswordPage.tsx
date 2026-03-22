@@ -29,8 +29,13 @@ const ForgotPasswordPage: React.FC = () => {
       setSuccess(data.message || "Password reset OTP sent to your email.");
       setStep("reset");
     } catch (err: any) {
+      const timeoutMessage =
+        err.code === "ECONNABORTED"
+          ? "Request timed out while sending OTP. The email service may be unavailable right now."
+          : null;
       setError(
-        err.response?.data?.message ||
+        timeoutMessage ||
+          err.response?.data?.message ||
           (err.request ? "Backend is unreachable. Start the server and check the API port." : "Unable to send OTP right now.")
       );
     } finally {

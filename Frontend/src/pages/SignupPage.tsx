@@ -35,6 +35,7 @@ const SignupPage: React.FC = () => {
   const [error, setError] = React.useState("");
   const [isLoading, setIsLoading] = React.useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = React.useState(false);
+  const [isGoogleReady, setIsGoogleReady] = React.useState(false);
   const googleButtonHostRef = React.useRef<HTMLDivElement | null>(null);
   const [googleButtonWidth, setGoogleButtonWidth] = React.useState(380);
 
@@ -83,20 +84,27 @@ const SignupPage: React.FC = () => {
 
   React.useEffect(() => {
     const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-    if (!clientId || !window.google?.accounts?.id) {
+    if (!clientId) {
+      setIsGoogleReady(false);
       return;
     }
 
-    window.google.accounts.id.initialize({
-      client_id: clientId,
-      callback: ({ credential }) => {
-        if (credential) {
-          void handleGoogleCredential(credential);
-        }
-      },
-    });
+    let cancelled = false;
 
-    if (googleButtonHostRef.current) {
+    const tryRenderGoogleButton = () => {
+      if (cancelled || !window.google?.accounts?.id || !googleButtonHostRef.current) {
+        return false;
+      }
+
+      window.google.accounts.id.initialize({
+        client_id: clientId,
+        callback: ({ credential }) => {
+          if (credential) {
+            void handleGoogleCredential(credential);
+          }
+        },
+      });
+
       googleButtonHostRef.current.innerHTML = "";
       window.google.accounts.id.renderButton(googleButtonHostRef.current, {
         type: "standard",
@@ -106,7 +114,28 @@ const SignupPage: React.FC = () => {
         shape: "rectangular",
         width: googleButtonWidth,
       });
+
+      setIsGoogleReady(true);
+      return true;
+    };
+
+    if (tryRenderGoogleButton()) {
+      return () => {
+        cancelled = true;
+      };
     }
+
+    setIsGoogleReady(false);
+    const intervalId = window.setInterval(() => {
+      if (tryRenderGoogleButton()) {
+        window.clearInterval(intervalId);
+      }
+    }, 250);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(intervalId);
+    };
   }, [googleButtonWidth, handleGoogleCredential]);
 
   const handleSignup = async (name: string, email: string, password: string) => {
@@ -118,8 +147,13 @@ const SignupPage: React.FC = () => {
       localStorage.setItem("pendingUserName", name);
       navigate("/verify-otp", { state: { email } });
     } catch (err: any) {
+      const timeoutMessage =
+        err.code === "ECONNABORTED"
+          ? "Request timed out while creating your account. The email service may be unavailable right now."
+          : null;
       setError(
-        err.response?.data?.message ||
+        timeoutMessage ||
+          err.response?.data?.message ||
           (err.request
             ? "Backend is unreachable. Start the server and check the API port."
             : "Unable to create your account.")
@@ -141,6 +175,10 @@ const SignupPage: React.FC = () => {
       setError("Google Sign-In script is not loaded yet. Refresh and try again.");
       return;
     }
+
+    if (!isGoogleReady) {
+      setError("Google Sign-In is still loading. Please wait a moment and try again.");
+    }
   };
 
   return (
@@ -152,8 +190,13 @@ const SignupPage: React.FC = () => {
         isGoogleLoading={isGoogleLoading}
         error={error}
         googleOverlay={
-          <div className="absolute inset-0 z-10 overflow-hidden rounded-lg opacity-0">
-            <div ref={googleButtonHostRef} className="h-full w-full" />
+          <div className="w-full min-h-[54px] rounded-lg border border-outline-variant bg-transparent px-3 py-2">
+            <div ref={googleButtonHostRef} className="flex min-h-[36px] w-full items-center justify-center" />
+            {!isGoogleReady && (
+              <div className="text-center text-sm font-semibold text-on-surface-variant">
+                Loading Google Sign-In...
+              </div>
+            )}
           </div>
         }
       />
