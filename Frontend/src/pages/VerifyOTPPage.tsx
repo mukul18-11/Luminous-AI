@@ -7,7 +7,10 @@ import { resendOTP, verifyOTP } from "../api/auth";
 const VerifyOTPPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const email = (location.state as { email?: string })?.email || "";
+  const email =
+    (location.state as { email?: string })?.email ||
+    localStorage.getItem("pendingVerificationEmail") ||
+    "";
 
   const [isVerifying, setIsVerifying] = useState(false);
   const [isResending, setIsResending] = useState(false);
@@ -44,6 +47,7 @@ const VerifyOTPPage: React.FC = () => {
         localStorage.getItem("pendingUserName") || data.user.name || email.split("@")[0]
       );
       localStorage.removeItem("pendingUserName");
+      localStorage.removeItem("pendingVerificationEmail");
       navigate("/dashboard");
     } catch (err: any) {
       setError(err.response?.data?.message || "Invalid OTP. Please try again.");
@@ -54,6 +58,10 @@ const VerifyOTPPage: React.FC = () => {
 
   const handleResend = async () => {
     if (resendCooldown > 0 || isResending) return;
+    if (!email) {
+      setError("We couldn't find your email. Please sign up again to request a fresh OTP.");
+      return;
+    }
 
     setIsResending(true);
     setError("");

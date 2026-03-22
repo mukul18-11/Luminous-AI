@@ -159,6 +159,7 @@ const LoginPage: React.FC = () => {
       const pendingEmail = err.response?.data?.email || email;
 
       if (needsVerification) {
+        localStorage.setItem("pendingVerificationEmail", pendingEmail);
         navigate("/verify-otp", { state: { email: pendingEmail } });
         return;
       }

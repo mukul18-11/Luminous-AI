@@ -5,6 +5,7 @@ const { generateOTP, sendOTPEmail } = require('../services/emailService');
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const AUTH_COOKIE_NAME = 'auth_token';
 const AUTH_TTL_MS = 5 * 24 * 60 * 60 * 1000;
+const OTP_EXPIRY_MS = 10 * 60 * 1000;
 
 // Generate JWT token
 const generateToken = (user) => {
@@ -45,8 +46,14 @@ const buildAuthResponse = (user, token, message) => ({
 });
 
 const normalizeEmail = (email) => email.trim().toLowerCase();
+const assignVerificationOtp = (user) => {
+  const otp = generateOTP();
+  user.otp = otp;
+  user.otpExpiresAt = new Date(Date.now() + OTP_EXPIRY_MS);
+  return otp;
+};
 
-// @desc    Register a new user and sign them in immediately
+// @desc    Register a new user and require OTP verification
 // @route   POST /api/auth/signup
 const signup = async (req, res, next) => {
   try {
@@ -56,41 +63,44 @@ const signup = async (req, res, next) => {
     // Check if user already exists
     const existingUser = await User.findOne({ email: normalizedEmail });
     if (existingUser) {
-      // If already verified, tell them to login
+      if (existingUser.authProvider === 'google' && !existingUser.password) {
+        return res.status(400).json({
+          message: 'This email is already registered with Google Sign-In. Please continue with Google.',
+        });
+      }
+
       if (existingUser.isVerified) {
         return res.status(409).json({ message: 'Email already registered. Please login.' });
       }
 
-      // Legacy unverified users can complete signup without OTP.
       existingUser.name = name;
       existingUser.password = password;
-      existingUser.isVerified = true;
-      existingUser.otp = null;
-      existingUser.otpExpiresAt = null;
+      const otp = assignVerificationOtp(existingUser);
       await existingUser.save();
 
-      const token = generateToken(existingUser);
-      setAuthCookie(res, token);
+      await sendOTPEmail(normalizedEmail, otp, name, { purpose: 'verify' });
 
-      return res.status(200).json(
-        buildAuthResponse(existingUser, token, 'Signup successful! Your account is ready.')
-      );
+      return res.status(200).json({
+        message: 'OTP resent to your email. Please verify your account to continue.',
+        email: normalizedEmail,
+      });
     }
 
-    // Create verified user immediately (OTP temporarily removed for signup)
+    const otp = generateOTP();
     const user = await User.create({
       name,
       email: normalizedEmail,
       password,
-      isVerified: true,
-      otp: null,
-      otpExpiresAt: null,
+      otp,
+      otpExpiresAt: new Date(Date.now() + OTP_EXPIRY_MS),
     });
 
-    const token = generateToken(user);
-    setAuthCookie(res, token);
+    await sendOTPEmail(normalizedEmail, otp, name, { purpose: 'verify' });
 
-    res.status(201).json(buildAuthResponse(user, token, 'Signup successful!'));
+    res.status(201).json({
+      message: 'Signup successful! Please verify the OTP sent to your email.',
+      email: user.email,
+    });
   } catch (error) {
     next(error);
   }
@@ -160,7 +170,7 @@ const resendOTP = async (req, res, next) => {
     user.otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
     await user.save();
 
-    await sendOTPEmail(normalizedEmail, otp, user.name);
+    await sendOTPEmail(normalizedEmail, otp, user.name, { purpose: 'verify' });
 
     res.json({ message: 'New OTP sent to your email.' });
   } catch (error) {
@@ -191,12 +201,12 @@ const login = async (req, res, next) => {
       return res.status(401).json({ message: 'Wrong password. Please try again.' });
     }
 
-    // Legacy accounts created before OTP removal should become verified after a valid login.
     if (!user.isVerified) {
-      user.isVerified = true;
-      user.otp = null;
-      user.otpExpiresAt = null;
-      await user.save();
+      return res.status(403).json({
+        message: 'Email not verified. Please verify your email first.',
+        needsVerification: true,
+        email: user.email,
+      });
     }
 
     // Generate token
@@ -231,7 +241,7 @@ const forgotPassword = async (req, res, next) => {
     user.resetPasswordOtpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
     await user.save();
 
-    await sendOTPEmail(normalizedEmail, otp, user.name);
+    await sendOTPEmail(normalizedEmail, otp, user.name, { purpose: 'reset' });
 
     res.json({ message: 'Password reset OTP sent to your email.', email: normalizedEmail });
   } catch (error) {
