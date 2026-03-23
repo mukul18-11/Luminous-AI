@@ -5,7 +5,6 @@ const { generateOTP, sendOTPEmail } = require('../services/emailService');
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const AUTH_COOKIE_NAME = 'auth_token';
 const AUTH_TTL_MS = 5 * 24 * 60 * 60 * 1000;
-const OTP_EXPIRY_MS = 10 * 60 * 1000;
 
 // Generate JWT token
 const generateToken = (user) => {
@@ -46,14 +45,8 @@ const buildAuthResponse = (user, token, message) => ({
 });
 
 const normalizeEmail = (email) => email.trim().toLowerCase();
-const assignVerificationOtp = (user) => {
-  const otp = generateOTP();
-  user.otp = otp;
-  user.otpExpiresAt = new Date(Date.now() + OTP_EXPIRY_MS);
-  return otp;
-};
 
-// @desc    Register a new user and require OTP verification
+// @desc    Register a new user and sign them in immediately
 // @route   POST /api/auth/signup
 const signup = async (req, res, next) => {
   try {
@@ -75,32 +68,32 @@ const signup = async (req, res, next) => {
 
       existingUser.name = name;
       existingUser.password = password;
-      const otp = assignVerificationOtp(existingUser);
+      existingUser.isVerified = true;
+      existingUser.otp = null;
+      existingUser.otpExpiresAt = null;
       await existingUser.save();
 
-      await sendOTPEmail(normalizedEmail, otp, name, { purpose: 'verify' });
+      const token = generateToken(existingUser);
+      setAuthCookie(res, token);
 
-      return res.status(200).json({
-        message: 'OTP resent to your email. Please verify your account to continue.',
-        email: normalizedEmail,
-      });
+      return res.status(200).json(
+        buildAuthResponse(existingUser, token, 'Signup successful! Your account is ready.')
+      );
     }
 
-    const otp = generateOTP();
     const user = await User.create({
       name,
       email: normalizedEmail,
       password,
-      otp,
-      otpExpiresAt: new Date(Date.now() + OTP_EXPIRY_MS),
+      isVerified: true,
+      otp: null,
+      otpExpiresAt: null,
     });
 
-    await sendOTPEmail(normalizedEmail, otp, name, { purpose: 'verify' });
+    const token = generateToken(user);
+    setAuthCookie(res, token);
 
-    res.status(201).json({
-      message: 'Signup successful! Please verify the OTP sent to your email.',
-      email: user.email,
-    });
+    res.status(201).json(buildAuthResponse(user, token, 'Signup successful!'));
   } catch (error) {
     next(error);
   }
@@ -202,11 +195,10 @@ const login = async (req, res, next) => {
     }
 
     if (!user.isVerified) {
-      return res.status(403).json({
-        message: 'Email not verified. Please verify your email first.',
-        needsVerification: true,
-        email: user.email,
-      });
+      user.isVerified = true;
+      user.otp = null;
+      user.otpExpiresAt = null;
+      await user.save();
     }
 
     // Generate token
